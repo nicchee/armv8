@@ -9,12 +9,12 @@ typedef struct {
 	bool Z;
 	bool C; 
 	bool V;
-} pstate_t
+} pstate_t;
 
 typedef struct { 
 	uint64_t regs[31];
 	uint64_t pc;
 	pstate_t ps;
-} mstate_t
+} mstate_t;
 
 #endif
