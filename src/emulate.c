@@ -39,7 +39,8 @@ int main(int argc, char **argv) {
 int dpi_imm(uint32_t instruction, mstate_t *state) { 
 	uint32_t opi = (instruction >> SHIFT_OPI) & MASK(3);
 	if (opi == ARITH ) {
-		
+		if (dpi_imm_arith(instruction, state) == 1) { return 1; }
+		return 0;
 	} else if (opi == WMOVE) {
 	
 	} else {
