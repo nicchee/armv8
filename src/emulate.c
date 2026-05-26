@@ -37,9 +37,12 @@ int main(int argc, char **argv) {
  * @return 0 if program exit successfully; 1 if program failed
  */
 int dpi_imm(uint32_t instruction, mstate_t *state) { 
+	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	uint32_t opi = (instruction >> SHIFT_OPI) & MASK(3);
+	int sh = (instruction >> SHIFT_SF) & MASK(1);
+	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	if (opi == ARITH ) {
-		if (dpi_imm_arith(instruction, state) == 1) { return 1; }
+		if (dpi_imm_arith(instruction, state, sh, opc, rd_index) == 1) { return 1; }
 		return 0;
 	} else if (opi == WMOVE) {
 	
@@ -51,21 +54,21 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 
 /*
  * @brief DPI Helper Arithmetic operation
- * @param instruction: 32-bit unsigned instruction word
- * @param state *: pointer to the machine state
+ * @param instruction 32-bit unsigned instruction word
+ * @param state pointer to the machine state
+ * @param sh value of sh (32/64 bits operation)
+ * @param opc type of operation in arithmetic operation
+ * @param rd_index index of rd 
  * @return 0 if program exit successfully; 1 if program failed
  * @attention lots of redundant code
  */
-int dpi_imm_arith(uint32_t instruction, mstate_t *state) {
+int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sh, int opc, int rd_index) {
 	uint32_t imm12 = (instruction >> SHIFT_IMM12) & MASK(12);
-	int sh = (instruction >> SHIFT_SF) & MASK(1);
 	if (sh == 1) {
 		imm12 <<= 12;	
 	}
-	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	int sf = (instruction >> SHIFT_SF) & MASK(1); // 0 for 32-bit; 1 for 64-bit
 	int rn_index = (instruction >> SHIFT_RN) & MASK(5); 
-	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	if (rd_index == REG32) {
 		return 0;
 	}
@@ -136,10 +139,44 @@ int dpi_imm_arith(uint32_t instruction, mstate_t *state) {
 				if (rd_index != REG32) { state->regs[rd_index] = (uint64_t)wd_val; }
 			}
 			break;
+		default: 
+			return 1;
 	}
+}
 
-	
-	
+/*
+* @brief DPI Helper Wide Move operation
+* @param instruction: 32-bit unsigned instruction word
+* @param state *: pointer to the machine state
+* @param sh value of sh (32/64 bits operation)
+* @param opc type of operation in arithmetic operation
+* @param rd_index index of rd 
+* @return 0 if program exit successfully; 1 if program failed
+* @attention lots of redundant code
+*/
+static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
+	int hw = ((instruction >> SHIFT_HW) & MASK(2));
+	uint64_t imm16 = (instruction >> SHIFT_IMM16) & MASK(16);
+	if (sf == 0 && hw > 1) {
+		return 1;
+	}
+	imm16 <<= (hw * 16);
+	switch(opc) { 
+		case 0: //movn
+			state->regs[rd_index] = (sf == 1)? ~imm16: ~((uint32_t)imm16);
+			break;
+		case 2: 
+			state->regs[rd_index] = imm16;
+			break;
+		case 3: 
+			uint64_t rd_val = state->regs[rd_index];
+			rd_val = rd_val & ~(MASK(16) << (hw * 16));
+			rd_val = rd_val | imm16;
+			state->regs[rd_index] = (sf == 1)? rd_val : (uint32_t)rd_val;
+		default:
+			return 1;
+		
+	} 
 }
 
 
