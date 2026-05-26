@@ -45,7 +45,8 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 		if (dpi_imm_arith(instruction, state, sh, opc, rd_index) == 1) { return 1; }
 		return 0;
 	} else if (opi == WMOVE) {
-	
+		if (dpi_imm_wide(instruction, state, sh, opc, rd_index) == 1) { return 1; }
+		return 0;
 	} else {
 		return 1; // failed
 	}
