@@ -27,6 +27,7 @@ int init(void) {
 	uint64_t genRegs[31] = {0} //zero all general registers
 	struct mstate_t mState = {genRegs, 0, 0, pState}; //set machine state
 	uint8_t memory[MEMSIZE] = {0}; //set all memory to 0
+	return 0;
 }
 
 
