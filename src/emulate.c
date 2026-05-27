@@ -1,5 +1,9 @@
 #include <stdlib.h>
 #include "emulate.h"
+#include <stdio.h>
+
+extern int init(void);
+extern void bin_file_load(uint8_t memory, const char *fileName);
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
