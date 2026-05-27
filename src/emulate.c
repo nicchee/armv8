@@ -48,21 +48,16 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 	} else if (opi == WMOVE) {
 		return dpi_imm_wide(instruction, state, sf, opc, rd_index);
 	} else {
-		return 1; // failed
+		exit(1); // failed
 	}
 }
 
 
-/*
- * @brief DPI Helper Arithmetic operation
- * @param instruction 32-bit unsigned instruction word
- * @param state pointer to the machine state
- * @param sh value of sh (32/64 bits operation)
- * @param opc type of operation in arithmetic operation
- * @param rd_index index of rd 
- * @return 0 if program exit successfully; 1 if program failed
- * @attention lots of redundant code
- */
+
+/* return dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+ * 		helper function to perform arith functions based on opc if opi == ARITH
+ * @return 0 if successful 1 if fail
+*/
 static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
 	if (opc > 3) {return 1;} // opc code not recognised
 	uint32_t imm12 = (instruction >> SHIFT_IMM12) & MASK(12);
@@ -97,21 +92,15 @@ static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc,
 	return 0;
 }
 
-/*
-* @brief DPI Helper Wide Move operation
-* @param instruction: 32-bit unsigned instruction word
-* @param state *: pointer to the machine state
-* @param sh value of sh (32/64 bits operation)
-* @param opc type of operation in arithmetic operation
-* @param rd_index index of rd 
-* @return 0 if program exit successfully; 1 if program failed
-* @attention lots of redundant code
+/* return dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+ * 		helper function to perform wide functions based on opc if opi == WMOVE
+ * @return 0 if successful 1 if fail
 */
 static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
 	int hw = ((instruction >> SHIFT_HW) & MASK(2));
 	uint64_t imm16 = (instruction >> SHIFT_IMM16) & MASK(16);
 	if (sf == 0 && hw > 1) {
-		return 1;
+		exit(1);
 	}
 	imm16 <<= (hw * 16);
 	switch(opc) { 
@@ -128,7 +117,7 @@ static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, 
 			state->regs[rd_index] = (sf == 1)? rd_val : (uint32_t)rd_val;
 			break;
 		default:
-			return 1;
+			exit(1);
 	} 
 	return 0;
 }
