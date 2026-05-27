@@ -31,8 +31,3 @@ int init(void) {
 }
 
 
-int main (int argc, char **argv) {
-	init();
-}
-
-
