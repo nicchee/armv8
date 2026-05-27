@@ -2,28 +2,34 @@
 #include "emulate.h"
 #include <stdio.h>
 
-extern int init(void);
+extern int init(mstate_t *mState_tp);
 extern void bin_file_load(uint8_t memory, const char *fileName);
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
 		fprintf(stderr, "There must be 1 or 2 arguments passed to %s", argv[0]);
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	} 
-	init();
+	mstate_t mState;
+	init(&mState);
 	bin_file_load(memory, argv[1]);
 
   return EXIT_SUCCESS;
 }
 
-int init(void) {
-	struct pstate_t pState = {0,1,0,0}; //set Z flag only
-	uint64_t genRegs[31] = {0} //zero all general registers
-	struct mstate_t mState = {genRegs, 0, 0, pState}; //set machine state
+// init();
+// 		initialise machine state;
+int init(mstate_t *mState_tp) {
+	memset(mState_tp->regs, 0, sizeof(mState_tp->regs)); // zero all registers
+	mState_tp->zr = 0;
+	mState_tp->pc = 0;
+	mState_tp->ps = (pstate_t){false, true, false, false}; //set Z flag only
 	uint8_t memory[MEMSIZE] = {0}; //set all memory to 0
 	return 0;
 }
 
+// bin_file_load(memory, argv[1]);
+//		load .bin file into memory
 void bin_file_load(uint8_t memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
