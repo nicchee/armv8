@@ -19,6 +19,10 @@
 #define ARITH_BL_M 0
 #define SHIFT_NEGATED 21
 #define SHIFT_SHIFT 22
+#define LSL 0
+#define LSR 1
+#define ASR 2
+#define ROR 3
 
 // Multiply
 #define OPR_MULT 8
@@ -27,6 +31,9 @@
 
 // Mask
 #define MASK(x) ((1<<x) - 1)
+
+// Special Register
+#define REG32 31
 
 typedef enum {
     UNKNOWN,
@@ -37,30 +44,66 @@ typedef enum {
 
 extern OpGroup get_op_group(int m, uint32_t opr);
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
+extern int dpi_reg_arith();
+extern int dpi_reg_bitlogic();
+extern int dpi_reg_mult();
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
 int dpi_reg(uint32_t instruction, mstate_t *state) {
+	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
+	int rn_index = (instruction >> SHIFT_RN) & MASK(5);
+	int rm_index = (instruction >> SHIFT_RM) & MASK(5);
 	int sf = (instruction >> SHIFT_SF) & MASK(1);
 	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	int m = (instruction >> SHIFT_M) & MASK(1);
 	uint32_t opr = (instruction >> SHIFT_OPR) & MASK(4);
 	OpGroup opgroup = get_op_group(m, opr);
+	switch (opgroup) {
+		case BIT_LOGIC:
+			return dpi_reg_bitlogic();
+		case ARITHMETIC:
+			return dpi_reg_arith();
+		case MULTIPLY:
+			return dpi_reg_mult();
+		default:
+			return 1; // opgroup is UNKNOWN
+	}
 }
 
 OpGroup get_op_group(int m, uint32_t opr) {
 	if (m == ARITH_BL_M) {
-		if ((opr >> 3) == 0) { //check that opr is 0xxx
-			return BIT_LOGIC
+		if ((opr >> 3) == 0) { // check that opr is 0xxx
+			return BIT_LOGIC;
 		}
-		if ((opr & ARITH_OPR_MASK) == ARITH_OPR) { //check that opr is 1xx0
-			return ARITHMETIC
+		if ((opr & ARITH_OPR_MASK) == ARITH_OPR) { // check that opr is 1xx0
+			return ARITHMETIC;
 		}
 	} else {
-		if (opr == OPR_MULT) { //check that opr is 1000
-			return MULTIPLY
+		if (opr == OPR_MULT) { // check that opr is 1000
+			return MULTIPLY;
 		}
 	}
+	return UNKNOWN;
 }
+
+int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
+	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
+	int64_t rn_val = (sf == 1)? state->regs[rn_index] : (int32_t)state->regs[rn_index]; 
+	int64_t rm_val = state->regs[rm_index]
+	switch (shift) {
+		case LSL:
+			int64_t op2 = 
+	}
+}
+
+int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
+	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
+	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
+	
+}
+
