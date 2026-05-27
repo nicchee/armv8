@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 #include "emulate.h"
 
 // Data Processing Instruction (Register)
@@ -42,12 +43,12 @@ typedef enum {
     MULTIPLY
 } OpGroup;
 
-extern OpGroup get_op_group(int m, uint32_t opr);
+static OpGroup get_op_group(int m, uint32_t opr);
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
-extern int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
-extern int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
-extern int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
-extern int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
+static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
+static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
