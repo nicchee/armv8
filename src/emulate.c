@@ -46,8 +46,8 @@ extern static OpGroup get_op_group(int m, uint32_t opr);
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
 extern static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
 extern static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
-extern static int dpi_reg_bitlogic();
-extern static int dpi_reg_mult();
+extern static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+extern static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
@@ -65,7 +65,7 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	if (opgroup == ARITHMETIC || opgroup == BIT_LOGIC) {
 		return dpi_reg_arith_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index, opgroup);
 	} else if (opgroup == MULTIPLY) {
-		return dpi_reg_mult();
+		return dpi_reg_mult(instruction, state, sf, opc, rd_index, rn_index, rm_index);
 	} else {
 		return 1; // opgroup UNKNOWN
 	}
@@ -158,7 +158,7 @@ static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_
 static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
-	if (rn_index == REG32) { rn_val = 0; }
+	if (rn_index == REG32) { rn_val = 0; } // read ZR
 	uint64_t result = 0;
 	switch (opc) {
 		case 0: // and, bic
@@ -209,6 +209,25 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 	if (rd_index == REG32) { return 0; } // write to ZR
 	if (sf == 0) { result = (uint32_t)result; }
 	state->regs[rd_index] = result;
+	return 0;
+}
+
+static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+	assert(opc == 0);
+	if (rd_index == REG32) { return 0; } // write to ZR
+	int x = (instruction >> SHIFT_X) & MASK(1);
+	int ra_index = (instruction >> SHIFT_RA) & MASK(5);
+	uint64_t ra_val = (sf == 1)? state->regs[ra_index] : (uint32_t)(state->regs[ra_index]);
+	if (ra_index == REG32) { ra_val = 0; } // read ZR
+	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
+	if (rn_index == REG32) { rn_val = 0; } // read ZR
+	uint64_t rm_val = (sf == 1)? state->regs[rm_index] : (uint32_t)(state->regs[rm_index]);
+	if (rm_index == REG32) { rm_val = 0; } // read ZR
+	if (x == 0) { // madd
+		state->regs[rd_index] = ra_val + (rn_val * rm_val); 
+	} else { // x == 1, msub
+		state->regs[rd_index] = ra_val - (rn_val * rm_val);
+	}
 	return 0;
 }
 
