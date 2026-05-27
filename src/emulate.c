@@ -25,6 +25,8 @@
 #define REG32 31
 
 extern int dpi_imm(uint32_t instruction, mstate_t *state);
+extern int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+extern int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
@@ -61,7 +63,7 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
  * @return 0 if program exit successfully; 1 if program failed
  * @attention lots of redundant code
  */
-int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
+static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
 	if (opc > 3) {return 1;} // opc code not recognised
 	uint32_t imm12 = (instruction >> SHIFT_IMM12) & MASK(12);
 	int sh = (instruction >> SHIFT_SH) & MASK(1);
