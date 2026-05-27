@@ -53,6 +53,12 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
+/*
+ * @brief Executes Data Processing Instruction (Register)
+ * @param instruction 32-bit unsigned instruction 
+ * @param state* pointer to the machine state
+ * @return 0 if program exits successfully; 1 if program failed
+ */
 int dpi_reg(uint32_t instruction, mstate_t *state) {
 	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	int rn_index = (instruction >> SHIFT_RN) & MASK(5);
@@ -67,10 +73,13 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	} else if (opgroup == MULTIPLY) {
 		return dpi_reg_mult(instruction, state, sf, opc, rd_index, rn_index, rm_index);
 	} else {
-		return 1; // opgroup UNKNOWN
+		exit(1); // opgroup UNKNOWN
 	}
 }
 
+/*
+ * helper function for dpi_reg to determine type of data processing instruction
+ */
 static OpGroup get_op_group(int m, uint32_t opr) {
 	if (m == ARITH_BL_M) {
 		if ((opr >> 3) == 0) { // check that opr is 0xxx
@@ -87,6 +96,9 @@ static OpGroup get_op_group(int m, uint32_t opr) {
 	return UNKNOWN;
 }
 
+/*
+ * helper function for dpi_reg to do arithmetic/bit-logic instructions
+ */
 static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
 	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
@@ -112,17 +124,20 @@ static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf,
 			op2 = (sf == 1)? (rm_val >> shift) | (rm_val << (64 - shift)) : (((uint32_t)rm_val) >> shift) | (((uint32_t)rm_val) << (32 - shift));
 			break; 
 		default:
-			return 1; // invalid shift
+			exit(1); // invalid shift
 	}
 	if (opgroup == ARITHMETIC) {
 		return dpi_reg_arith(state, sf, opc, rd_index, rn_index, op2); 
 	} else if (opgroup == BIT_LOGIC) {
 		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, op2); 
 	} else {
-		return 1; //invalid opgroup
+		exit(1); //invalid opgroup
 	}
 }
 
+/*
+ * helper function for dpi_reg_arith_bitlogic to do arithmetic instructions
+ */
 static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	if (rn_index == REG32) { return 0; } // encodes SP
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
@@ -155,6 +170,9 @@ static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_
 	return 0;
 }
 
+/*
+ * helper function for dpi_reg_arith_bitlogic to do bit-logic instructions
+ */
 static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
@@ -167,7 +185,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			} else if (n == 1) { // bic
 				result = rn_val & ~op2;
 			} else {
-				return 1; // invalid n
+				exit(1); // invalid n
 			}
 			break;
 		case 1: // orr, orn
@@ -176,7 +194,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			} else if (n == 1) { // orn
 				result = rn_val | ~op2;
 			} else {
-				return 1; // invalid n
+				exit(1); // invalid n
 			}
 			break;
 		case 2: // eor, eon
@@ -185,7 +203,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			} else if (n == 1) { // eon
 				result = rn_val ^ ~op2;
 			} else {
-				return 1; // invalid n
+				exit(1); // invalid n
 			}
 			break;
 		case 3: // ands, bics
@@ -194,7 +212,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			} else if (n == 1) { // bics
 				result = rn_val & ~op2;
 			} else {
-				return 1; // invalid n
+				exit(1); // invalid n
 			}
 			const int msb = (sf == 1)? 63 : 31;
 			const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative	
@@ -204,7 +222,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			state->pc.V = 0;
 			break;
 		default:
-			return 1; // invalid opc
+			exit(1); // invalid opc
 	}
 	if (rd_index == REG32) { return 0; } // write to ZR
 	if (sf == 0) { result = (uint32_t)result; }
@@ -212,6 +230,9 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 	return 0;
 }
 
+/*
+ * helper function for dpi_reg to do multiply instructions
+ */
 static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
 	assert(opc == 0);
 	if (rd_index == REG32) { return 0; } // write to ZR
