@@ -30,4 +30,11 @@ int init(void) {
 	return 0;
 }
 
-
+void bin_file_load(uint8_t memory, const char *fileName){
+	FILE *in = fopen(fileName, "rb");
+	if (in == NULL) {
+		fprintf(stderr, "Can't open input binary file");
+		exit(1);
+	}
+	
+}
