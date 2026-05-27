@@ -159,42 +159,49 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
 	if (rn_index == REG32) { rn_val = 0; }
+	uint64_t result = 0;
 	switch (opc) {
 		case 0: // and, bic
 			if (n == 0) { // and
-				uint64_t result = rn_val & op2;
+				result = rn_val & op2;
 			} else if (n == 1) { // bic
-				uint64_t result = rn_val & ~op2;
+				result = rn_val & ~op2;
 			} else {
 				return 1; // invalid n
 			}
 			break;
 		case 1: // orr, orn
 			if (n == 0) { // orr
-				uint64_t result = rn_val | op2;
+				result = rn_val | op2;
 			} else if (n == 1) { // orn
-				uint64_t result = rn_val | ~op2;
+				result = rn_val | ~op2;
 			} else {
 				return 1; // invalid n
 			}
 			break;
 		case 2: // eor, eon
 			if (n == 0) { // eor
-				uint64_t result = rn_val ^ op2;
+				result = rn_val ^ op2;
 			} else if (n == 1) { // eon
-				uint64_t result = rn_val ^ ~op2;
+				result = rn_val ^ ~op2;
 			} else {
 				return 1; // invalid n
 			}
 			break;
 		case 3: // ands, bics
 			if (n == 0) { // ands
-				uint64_t result = rn_val & op2;
+				result = rn_val & op2;
 			} else if (n == 1) { // bics
-				uint64_t result = rn_val & ~op2;
+				result = rn_val & ~op2;
 			} else {
 				return 1; // invalid n
 			}
+			const int msb = (sf == 1)? 63 : 31;
+			const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative	
+			state->ps.N = result_N; // set N to the sign bit of result
+			state->ps.Z = result == 0; // set Z if result is 0
+			state->ps.C = 0;
+			state->pc.V = 0;
 			break;
 		default:
 			return 1; // invalid opc
