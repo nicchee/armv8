@@ -44,6 +44,7 @@ typedef enum {
 
 extern OpGroup get_op_group(int m, uint32_t opr);
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
+extern int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
 extern int dpi_reg_arith();
 extern int dpi_reg_bitlogic();
 extern int dpi_reg_mult();
@@ -61,15 +62,12 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	int m = (instruction >> SHIFT_M) & MASK(1);
 	uint32_t opr = (instruction >> SHIFT_OPR) & MASK(4);
 	OpGroup opgroup = get_op_group(m, opr);
-	switch (opgroup) {
-		case BIT_LOGIC:
-			return dpi_reg_bitlogic();
-		case ARITHMETIC:
-			return dpi_reg_arith();
-		case MULTIPLY:
-			return dpi_reg_mult();
-		default:
-			return 1; // opgroup is UNKNOWN
+	if (opgroup == ARITHMETIC || opgroup == BIT_LOGIC) {
+		return dpi_reg_arith_bitlogic();
+	} else if (opgroup == MULTIPLY) {
+		return dpi_reg_mult();
+	} else {
+		return 1; // opgroup UNKNOWN
 	}
 }
 
@@ -89,25 +87,42 @@ OpGroup get_op_group(int m, uint32_t opr) {
 	return UNKNOWN;
 }
 
-int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
+int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
 	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
-	int64_t rn_val = (sf == 1)? state->regs[rn_index] : (int32_t)(state->regs[rn_index]); 
-	int64_t rm_val = state->regs[rm_index];
-	int64_t op2;
+	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
+	uint64_t rm_val = state->regs[rm_index];
+	uint64_t op2 = 0;
 	switch (shift) {
 		case LSL:
-			op2 = (sf == 1)? rm_val << shift : (int32_t)(rm_val << shift);
+			uint64_t result = rm_val << shift;
+			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case LSR:
-			op2 = (sf == 1)? (((uint64_t)rm_val) >> shift) : (int32_t)(((uint64_t)rm_val) >> shift);
+			uint64_t result = rm_val >> shift;
+			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case ASR:
-			op2 = (sf == 1)? rm_val >> shift : (int32_t)(((int32_t)rm_val) >> shift);
+			op2 = (sf == 1)? (((int64_t)rm_val) >> shift) : (((int32_t)rm_val) >> shift);
 			break;
 		case ROR:
-			
+			if (opgroup != BIT_LOGIC) {
+				return 1; // invalid, no ror for arithmetic
+			}
+			op2 = (sf == 1)? (rm_val >> shift) | (rm_val << (64 - shift)) : (((uint32_t)rm_val) >> shift) | (((uint32_t)rm_val) << (32 - shift));
+			break; 
 	}
+	if (opgroup == ARITHMETIC) {
+		return dpi_reg_arith(instruction, state, sf, opc, rd_index, rn_index, rm_index); 
+	} else if (opgroup == BIT_LOGIC) {
+		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index); 
+	} else {
+		return 1; //invalid opgroup
+	}
+}
+
+int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+
 }
 
 int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
