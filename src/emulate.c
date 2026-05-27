@@ -91,6 +91,7 @@ static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf,
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
 	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
+	if (rm_index == REG32) { rm_val = 0; }
 	uint64_t op2 = 0;
 	switch (shift) {
 		case LSL:
@@ -116,7 +117,7 @@ static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf,
 	if (opgroup == ARITHMETIC) {
 		return dpi_reg_arith(state, sf, opc, rd_index, rn_index, op2); 
 	} else if (opgroup == BIT_LOGIC) {
-		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index); 
+		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, op2); 
 	} else {
 		return 1; //invalid opgroup
 	}
@@ -154,8 +155,53 @@ static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_
 	return 0;
 }
 
-static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
-	
+	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
+	if (rn_index == REG32) { rn_val = 0; }
+	switch (opc) {
+		case 0: // and, bic
+			if (n == 0) { // and
+				uint64_t result = rn_val & op2;
+			} else if (n == 1) { // bic
+				uint64_t result = rn_val & ~op2;
+			} else {
+				return 1; // invalid n
+			}
+			break;
+		case 1: // orr, orn
+			if (n == 0) { // orr
+				uint64_t result = rn_val | op2;
+			} else if (n == 1) { // orn
+				uint64_t result = rn_val | ~op2;
+			} else {
+				return 1; // invalid n
+			}
+			break;
+		case 2: // eor, eon
+			if (n == 0) { // eor
+				uint64_t result = rn_val ^ op2;
+			} else if (n == 1) { // eon
+				uint64_t result = rn_val ^ ~op2;
+			} else {
+				return 1; // invalid n
+			}
+			break;
+		case 3: // ands, bics
+			if (n == 0) { // ands
+				uint64_t result = rn_val & op2;
+			} else if (n == 1) { // bics
+				uint64_t result = rn_val & ~op2;
+			} else {
+				return 1; // invalid n
+			}
+			break;
+		default:
+			return 1; // invalid opc
+	}
+	if (rd_index == REG32) { return 0; } // write to ZR
+	if (sf == 0) { result = (uint32_t)result; }
+	state->regs[rd_index] = result;
+	return 0;
 }
 
