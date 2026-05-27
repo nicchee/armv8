@@ -75,24 +75,24 @@ static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc,
 	if (sf == 0) {result = (uint32_t)result;}
 	if ((opc & 1) == 0){ // without flag
 		if (rd_index == REG32){
-			return 0; // writes to ZR
+			return 0; // writes to SP
 		} 
 		state->regs[rd_index] = result; // opc == 0 or 2
 	} else { // with flag
-		uint64_t rd_val = result; // opc == 1 or 3
+		// opc == 1 or 3
 		const int msb = (sf == 1)? 63 : 31;
-		state->ps.N = (((rd_val >> msb) & 1) == 1); // set N if negative (MSB = 1)
-		state->ps.Z = rd_val == 0; // set Z flag if = 0
-		const bool rn_N = (rn_val >> msb) & 1 == 1; // check if rn_val is negative
+		state->ps.N = ((result >> msb) & 1) == 1; // set N if negative (MSB = 1)
+		state->ps.Z = result == 0; // set Z flag if = 0
+		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
 		const bool imm12_N = (int32_t)imm12 < 0; // check if imm12 is negative
 		if (opc == 1) {
-			state->ps.C = rd_val < imm12;
+			state->ps.C = result < imm12;
 			state->ps.V = (!state->ps.N && rn_N && imm12_N ) || (state->ps.N && !rn_N && !imm12_N );
 		} else { 
 			state->ps.C = rn_val >= imm12;
 			state->ps.V = (state->ps.N && !rn_N && imm12_N ) || (!state->ps.N && rn_N && !imm12_N );
 		}
-		if (rd_index != REG32) { state->regs[rd_index] = rd_val; }
+		if (rd_index != REG32) { state->regs[rd_index] = result; }
 	}
 	return 0;
 }
