@@ -89,14 +89,24 @@ OpGroup get_op_group(int m, uint32_t opr) {
 	return UNKNOWN;
 }
 
-int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
 	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
-	int64_t rn_val = (sf == 1)? state->regs[rn_index] : (int32_t)state->regs[rn_index]; 
-	int64_t rm_val = state->regs[rm_index]
+	int64_t rn_val = (sf == 1)? state->regs[rn_index] : (int32_t)(state->regs[rn_index]); 
+	int64_t rm_val = state->regs[rm_index];
+	int64_t op2;
 	switch (shift) {
 		case LSL:
-			int64_t op2 = 
+			op2 = (sf == 1)? rm_val << shift : (int32_t)(rm_val << shift);
+			break;
+		case LSR:
+			op2 = (sf == 1)? (((uint64_t)rm_val) >> shift) : (int32_t)(((uint64_t)rm_val) >> shift);
+			break;
+		case ASR:
+			op2 = (sf == 1)? rm_val >> shift : (int32_t)(((int32_t)rm_val) >> shift);
+			break;
+		case ROR:
+			
 	}
 }
 
