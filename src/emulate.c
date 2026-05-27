@@ -42,12 +42,12 @@ typedef enum {
     MULTIPLY
 } OpGroup;
 
-extern OpGroup get_op_group(int m, uint32_t opr);
+extern static OpGroup get_op_group(int m, uint32_t opr);
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
-extern int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
-extern int dpi_reg_arith();
-extern int dpi_reg_bitlogic();
-extern int dpi_reg_mult();
+extern static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
+extern static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+extern static int dpi_reg_bitlogic();
+extern static int dpi_reg_mult();
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
@@ -63,7 +63,7 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	uint32_t opr = (instruction >> SHIFT_OPR) & MASK(4);
 	OpGroup opgroup = get_op_group(m, opr);
 	if (opgroup == ARITHMETIC || opgroup == BIT_LOGIC) {
-		return dpi_reg_arith_bitlogic();
+		return dpi_reg_arith_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index, opgroup);
 	} else if (opgroup == MULTIPLY) {
 		return dpi_reg_mult();
 	} else {
@@ -71,7 +71,7 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	}
 }
 
-OpGroup get_op_group(int m, uint32_t opr) {
+static OpGroup get_op_group(int m, uint32_t opr) {
 	if (m == ARITH_BL_M) {
 		if ((opr >> 3) == 0) { // check that opr is 0xxx
 			return BIT_LOGIC;
@@ -87,10 +87,9 @@ OpGroup get_op_group(int m, uint32_t opr) {
 	return UNKNOWN;
 }
 
-int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
+static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
-	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
-	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
+	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
 	uint64_t op2 = 0;
 	switch (shift) {
@@ -111,9 +110,11 @@ int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int op
 			}
 			op2 = (sf == 1)? (rm_val >> shift) | (rm_val << (64 - shift)) : (((uint32_t)rm_val) >> shift) | (((uint32_t)rm_val) << (32 - shift));
 			break; 
+		default:
+			return 1; // invalid shift
 	}
 	if (opgroup == ARITHMETIC) {
-		return dpi_reg_arith(instruction, state, sf, opc, rd_index, rn_index, rm_index); 
+		return dpi_reg_arith(state, sf, opc, rd_index, rn_index, op2); 
 	} else if (opgroup == BIT_LOGIC) {
 		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index); 
 	} else {
@@ -121,13 +122,39 @@ int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int op
 	}
 }
 
-int dpi_reg_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
-
+static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
+	if (rn_index == REG32) { return 0; } // encodes SP
+	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
+	uint64_t result = (opc <= 1)? rn_val + op2 : rn_val - op2;
+	if (sf == 0) { result = (uint32_t)result; }
+	if ((opc & 1) == 0) { // without flag
+		if (rd_index == REG32) {
+			return 0; // encodes SP
+		}
+		state->regs[rd_index] = result; // opc == 0 or 2
+	} else { // with flag
+		const int msb = (sf == 1)? 63 : 31;
+		const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative
+		state->ps.N = result_N; // set N to the sign bit of result
+		state->ps.Z = result == 0; // set Z if result is 0
+		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
+		const bool op2_N = ((op2 >> msb) & 1) == 1; // check if op2 is negative
+		if (opc == 1) { // addition, opc == 1
+			state->ps.C = result < op2;
+			state->ps.V = (!result_N && rn_N && op2_N) || (result_N && !rn_N && !op2_N);
+		} else { // subtraction, opc == 3
+			state->ps.C = rn_val >= op2;
+			state->ps.V = (result_N && !rn_N && op2_N) || (!result_N && rn_N && !op2_N);
+		}
+		if (rd_index == REG32) {
+			return 0; // encodes ZR
+		}
+		state->regs[rd_index] = result;
+	}
+	return 0;
 }
 
-int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
-	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
-	int operand = (instruction >> SHIFT_OPERAND) & MASK(6);
+static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
 	
 }
