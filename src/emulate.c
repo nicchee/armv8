@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 int dpi_imm(uint32_t instruction, mstate_t *state) { 
 	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	uint32_t opi = (instruction >> SHIFT_OPI) & MASK(3);
-	int sh = (instruction >> SHIFT_SF) & MASK(1);
+	int sh = (instruction >> SHIFT_SH) & MASK(1);
 	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	if (opi == ARITH ) {
 		if (dpi_imm_arith(instruction, state, sh, opc, rd_index) == 1) { return 1; }
@@ -70,7 +70,7 @@ int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sh, int opc, int rd
 	}
 	int sf = (instruction >> SHIFT_SF) & MASK(1); // 0 for 32-bit; 1 for 64-bit
 	int rn_index = (instruction >> SHIFT_RN) & MASK(5); 
-	if (rd_index == REG32) {
+	if (rn_index == REG32) {
 		return 0;
 	}
 	int result; 
