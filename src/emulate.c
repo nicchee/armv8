@@ -24,6 +24,10 @@
 // Masking function - generate the mask bits required
 #define MASK(x) ((1U << (x)) - 1)
 
+void init_state(mstate_t *state) {
+  state->memory = malloc(MEMORY_SIZE);
+}
+
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
@@ -40,6 +44,7 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
   uint32_t sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
   uint32_t op = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);
 
+  // Determine the base address
   if (op == 0) {
     // Unsigned Immediate Offset
     if (u == 1) {
@@ -59,20 +64,39 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
         // Register Offset
         uint64_t addr = state->regs[xn] + state->regs[xm];
       } else {
+        uint64_t simm9 = sgn_extnd_simm9((offset >> 2) & MASK(9));
         uint32_t i = (offset >> 1) & 1;
         if (i == 0) {
           // Post-Indexed
           uint64_t addr = state->regs[xn];
-          state->regs[xn] += simm19;
+          state->regs[xn] += simm9;
         } else {
           // Pre-Indexed
-          uint64_t addr = state->regs[xn] + state->regs[xm];
-          state->regs[xn] = addr;
+          uint64_t addr = state->regs[xn] + simm9;
+          state->regs[xn] += simm9;
         }
       }
     }
   } else {
       // Literal
-      uint64_t addr = state->pc + (simm19 * 4);
+      uint64_t addr = state->pc + (sgn_extnd_simm19(simm19) * 4);
   }
+  
+}
+
+// Helper functions
+uint64_t sgn_extnd_simm19(uint32_t value) {
+  uint64_t result = value & 0x000000000007FFFF;
+  if (result & 0x0000000000040000) {
+    result |= ~0x000000000007FFFF;
+  }
+  return result;
+}
+
+uint64_t sgn_extnd_simm9(uint32_t value) {
+  uint64_t result = value & 0x00000000000003FF;
+  if (result & 0x0000000000000200) {
+    result |= ~0x00000000000003FF;
+  }
+  return result;
 }
