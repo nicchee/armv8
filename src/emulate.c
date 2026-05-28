@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
-extern void init(mstate_t *mState_tp);
-extern void bin_file_load(uint8_t *memory, const char *fileName);
+static void init(mstate_t *mState_tp);
+static void bin_file_load(uint8_t *memory, const char *fileName);
+static void free_state(mstate_t *mState_tp);
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
@@ -21,7 +22,7 @@ int main(int argc, char **argv) {
 
 // init();
 // 		initialise machine state;
-void init(mstate_t *mState_tp) {
+static void init(mstate_t *mState_tp) {
 	memset(mState_tp->regs, 0, sizeof(mState_tp->regs)); // zero all registers
 	mState_tp->zr = 0;
 	mState_tp->pc = 0;
@@ -32,7 +33,7 @@ void init(mstate_t *mState_tp) {
 
 // bin_file_load(memory, argv[1]);
 // load .bin file into memory
-void bin_file_load(uint8_t *memory, const char *fileName){
+static void bin_file_load(uint8_t *memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
 		fprintf(stderr, "Can't open input binary file");
@@ -51,6 +52,6 @@ void bin_file_load(uint8_t *memory, const char *fileName){
 }
 
 // Freeing the memory (avoiding memory leak)
-void free_state(mstate_t *mState_tp) {
+static void free_state(mstate_t *mState_tp) {
 	free(mState_tp->memory);
 }
