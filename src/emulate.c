@@ -25,8 +25,8 @@
 #define REG32 31
 
 extern int dpi_imm(uint32_t instruction, mstate_t *state);
-extern int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
-extern int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
