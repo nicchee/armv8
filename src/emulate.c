@@ -102,17 +102,18 @@ static OpGroup get_op_group(int m, uint32_t opr) {
  */
 static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
-	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
+	//int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
-	if (rm_index == REG32) { rm_val = 0; }
+	if (rm_index == REG32) { rm_val = 0; } // read ZR
 	uint64_t op2 = 0;
+	uint64_t result = 0;
 	switch (shift) {
 		case LSL:
-			uint64_t result = rm_val << shift;
+			result = rm_val << shift;
 			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case LSR:
-			uint64_t result = rm_val >> shift;
+			result = rm_val >> shift;
 			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case ASR:
@@ -220,7 +221,7 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			state->ps.N = result_N; // set N to the sign bit of result
 			state->ps.Z = result == 0; // set Z if result is 0
 			state->ps.C = 0;
-			state->pc.V = 0;
+			state->ps.V = 0;
 			break;
 		default:
 			exit(1); // invalid opc
