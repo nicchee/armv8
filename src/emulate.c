@@ -1,6 +1,23 @@
 #include <stdlib.h>
 #include "emulate.h"
 
+// Instruction
+#define SHIFT_OP0 25
+#define MASK1110 14
+#define MASK0111 7
+#define MASK0101 5
+
+typedef enum {
+	DPI_IMM,
+	DPI_REG,
+	LOADSTORE,
+	BRANCH,
+	UNKNOWN
+} InstrCat;
+
+// End of Instruction Macros
+
+
 // Data Processing Instruction (Immedaite) #defines
 
 // Position of each instruction part
@@ -27,6 +44,22 @@
 extern int dpi_imm(uint32_t instruction, mstate_t *state);
 static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+
+// Instruction Category Identifier
+InstrCat get_instr_cat(uint32_t instruction) {
+	uint8_t op0 = instruction >> SHIFT_OP0;
+	if ((op0 & MASK1110) == 8) { // checks 100x
+		return DPI_IMM;
+	} else if ((op0 & MASK0111) == 5) { // checks x101 
+		return DPI_REG;
+	} else if ((op0 & MASK0101) == 4) { // checks x1x0
+		return LOADSTORE;
+	} else if ((op0 & MASK1110) == 10) { // checks 101x
+		return BRANCH;
+	} else {
+		return UNKNOWN;
+	}
+}
 
 int main(int argc, char **argv) {
   return EXIT_SUCCESS;
