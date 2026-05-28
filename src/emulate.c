@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	} 
 	mstate_t mState;
 	init(&mState);
-	bin_file_load(memory, argv[1]);
+	bin_file_load(mState.memory, argv[1]);
 
   return EXIT_SUCCESS;
 }
@@ -24,7 +24,8 @@ int init(mstate_t *mState_tp) {
 	mState_tp->zr = 0;
 	mState_tp->pc = 0;
 	mState_tp->ps = (pstate_t){false, true, false, false}; //set Z flag only
-	uint8_t memory[MEMSIZE] = {0}; //set all memory to 0
+  mState_tp->memory = malloc(MEMSIZE);
+	memset(mState_tp->memory, 0, MEMSIZE); //set all memory to 0
 	return 0;
 }
 
@@ -37,4 +38,9 @@ void bin_file_load(uint8_t memory, const char *fileName){
 		exit(1);
 	}
 	
+}
+
+// Freeing the memory (avoiding memory leak)
+void free_state(mstate_t *mState_tp) {
+  free(mState_tp->memory);
 }

@@ -18,6 +18,7 @@ typedef struct {
 	uint64_t zr;
 	uint64_t pc;
 	pstate_t ps;
+	uint8_t *memory;
 } mstate_t;
 
 #endif
