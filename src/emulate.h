@@ -18,6 +18,6 @@ typedef struct {
 	uint8_t *memory
 } mstate_t;
 
-#define MEMORY_SIZE  2 * 1024 * 1024
+#define MEMSIZE  2 * 1024 * 1024
 
 #endif

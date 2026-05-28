@@ -10,6 +10,7 @@
 #define SHIFT_U 24
 #define SHIFT_SF 30
 #define SHIFT_OP 31
+#define SHIFT_XM 5
 
 // Width of each instcution part for Single Data Transfer & Load Literal
 #define WIDTH_RT 5
@@ -20,6 +21,7 @@
 #define WIDTH_U 1
 #define WIDTH_SF 1
 #define WIDTH_OP 1
+#define WIDTH_XM 5
 
 // Masking function - generate the mask bits required
 #define MASK(x) ((1U << (x)) - 1)
@@ -28,7 +30,10 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
-int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
+/*
+  * @function: implement the single data transfer and load literal
+*/
+int single_data_transfer(uint32_t instruction, mstate_t *state) {
   // Extraction of bits for Single Data Transfer & Load Literal
   uint32_t rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
   uint32_t xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
@@ -62,12 +67,13 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
         }
       }
     } else {
-      // Determine which operation from bit 10 of offset
+      // Determine which operation from bit 0 of offset
       uint32_t det_bit = offset & 1; // QUESTION: Is it better to use the MASK?
-      uint32_t xm = (offset >> 5) & MASK(5);
+      uint32_t xm = (offset >> SHIFT_XM) & MASK(WIDTH_XM);
       if (det_bit == 0) {
         // Register Offset
         uint64_t addr = state->regs[xn] + state->regs[xm];
+        check_addr(addr);
         if (sf == 1) {
           if (l == 1) {
             read_memory(state, addr, 8);
@@ -87,6 +93,7 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
         if (i == 0) {
           // Post-Indexed
           uint64_t addr = state->regs[xn];
+          check_addr(addr);
           if (sf == 1) {
           if (l == 1) {
               read_memory(state, addr, 8);
@@ -100,10 +107,11 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
               write_memory(state, addr, 4, rt);
             }
           }
-          state->regs[xn] += simm9; //Write back after !!! fix this once ldr and str are implemented
+          state->regs[xn] += simm9;
         } else {
           // Pre-Indexed
           uint64_t addr = state->regs[xn] + simm9;
+          check_addr(addr);
           if (sf == 1) {
           if (l == 1) {
               read_memory(state, addr, 8);
@@ -124,6 +132,7 @@ int single_data_transfer(uint32_t instruction, mstate_t *state, int sf, int opc,
   } else {
       // Literal (op == 1) (L == 1)
       uint64_t addr = state->pc + (sgx_simm19(simm19) * 4);
+      check_addr(addr);
       if (sf == 1) {
         read_memory(state, addr, 8);
       } else {
@@ -160,6 +169,15 @@ uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
 void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
   uint64_t value = state->regs[rt];
   for (int i = 0; i < num_bytes; i++) {
-    state->memory[addr + i] = (value >> i) & 0xFF;
+    state->memory[addr + i] = (uint8_t)(value >> (i * 8));
+  }
+}
+
+/*
+  * @function: check if address is Out-of-Bounds
+*/
+bool check_addr(mstate_t *state, uint64_t addr, int num_bytes) {
+  if (addr + num_bytes > MEMSIZE) {
+    exit(1);
   }
 }
