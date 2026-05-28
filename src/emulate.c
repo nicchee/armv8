@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 	mstate_t mState;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
+	free_state(&mState);
 
   return EXIT_SUCCESS;
 }
@@ -25,22 +26,31 @@ void init(mstate_t *mState_tp) {
 	mState_tp->zr = 0;
 	mState_tp->pc = 0;
 	mState_tp->ps = (pstate_t){false, true, false, false}; //set Z flag only
-  mState_tp->memory = malloc(MEMSIZE);
+  	mState_tp->memory = malloc(MEMSIZE);
 	memset(mState_tp->memory, 0, MEMSIZE); //set all memory to 0
 }
 
 // bin_file_load(memory, argv[1]);
-//		load .bin file into memory
+// load .bin file into memory
 void bin_file_load(uint8_t *memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
 		fprintf(stderr, "Can't open input binary file");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
-	
+	fseek(in, 0, SEEK_END);
+	int fileSize = ftell(in);
+	rewind(in);
+	if (fileSize > MEMSIZE) {
+		fprintf(stderr, "Bin file too big");
+		fclose(in);
+		exit(EXIT_FAILURE);
+	}
+	size_t bytesRead = fread(memory, sizeof(uint8_t), fileSize, in);
+	fclose(in);
 }
 
 // Freeing the memory (avoiding memory leak)
 void free_state(mstate_t *mState_tp) {
-  free(mState_tp->memory);
+	free(mState_tp->memory);
 }
