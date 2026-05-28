@@ -77,6 +77,7 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
+/*
  * @brief Executes Data Processing Instruction (Immediate) 
  * @param instruction 32-bit unsigned instruction word
  * @param state* pointer to the machine state
@@ -145,6 +146,7 @@ static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, 
 		exit(1);
 	}
 	imm16 <<= (hw * 16);
+	uint64_t rd_val = 0;
 	switch(opc) { 
 		case 0: //movn
 			state->regs[rd_index] = (sf == 1)? ~imm16: ~((uint32_t)imm16);
@@ -153,7 +155,7 @@ static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, 
 			state->regs[rd_index] = imm16;
 			break;
 		case 3: 
-			uint64_t rd_val = state->regs[rd_index];
+			rd_val = state->regs[rd_index];
 			rd_val = rd_val & ~(MASK(16) << (hw * 16));
 			rd_val = rd_val | imm16;
 			state->regs[rd_index] = (sf == 1)? rd_val : (uint32_t)rd_val;
