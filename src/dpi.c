@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "emulate.h"
@@ -62,24 +63,23 @@ typedef enum {
 } OpGroup;
 
 // DPI Imm + Reg private functions
-static int dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
 
 // DPI Imm private functions
-static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
+static void dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
 // DPI Reg private functions
 static OpGroup get_op_group(int m, uint32_t opr);
-static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
-static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
-static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
+static void dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
+static void dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+static void dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
 
 /*
  * @brief Executes Data Processing Instruction (Immediate) 
  * @param instruction 32-bit unsigned instruction word
  * @param state* pointer to the machine state
- * @return 0 if program exit successfully; 1 if program failed
  */
-int dpi_imm(uint32_t instruction, mstate_t *state) { 
+void dpi_imm(uint32_t instruction, mstate_t *state) { 
 	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	uint32_t opi = (instruction >> SHIFT_OPI) & MASK(3);
 	int sf = (instruction >> SHIFT_SF) & MASK(1);
@@ -89,27 +89,27 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 		int sh = (instruction >> SHIFT_SH) & MASK(1);
 		if (sh == 1) {imm12 <<= 12;}
 		int rn_index = (instruction >> SHIFT_RN) & MASK(5); 
-		return dpi_arith(state, sf, opc, rd_index, rn_index, imm12);
+		dpi_arith(state, sf, opc, rd_index, rn_index, imm12);
 	} else if (opi == WMOVE) {
-		return dpi_imm_wide(instruction, state, sf, opc, rd_index);
+		dpi_imm_wide(instruction, state, sf, opc, rd_index);
 	} else {
-		exit(1); // failed
+		fprintf(stderr, "Error: invalid opi.\n");
+		exit(EXIT_FAILURE); // failed
 	}
 }
 
 /* helper function for dpi imm and dpi reg
  * if dpi imm, op2 is imm12
  * if dpi reg, op2 is Rm shifted (operand) many bits by the shift encoded in (shift)
- * return 0 if successful, 1 if failed
  */
-static int dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
-	if (rn_index == REG32) { return 0; } // encodes SP
+static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
+	if (rn_index == REG32) { return; } // encodes SP
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
 	uint64_t result = (opc <= 1)? rn_val + op2 : rn_val - op2;
 	if (sf == 0) { result = (uint32_t)result; }
 	if ((opc & 1) == 0) { // without flag
 		if (rd_index == REG32) {
-			return 0; // encodes SP
+			return; // encodes SP
 		}
 		state->regs[rd_index] = result; // opc == 0 or 2
 	} else { // with flag
@@ -127,22 +127,22 @@ static int dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_inde
 			state->ps.V = (result_N && !rn_N && op2_N) || (!result_N && rn_N && !op2_N);
 		}
 		if (rd_index == REG32) {
-			return 0; // encodes ZR
+			return; // encodes ZR
 		}
 		state->regs[rd_index] = result;
 	}
-	return 0;
+	return;
 }
 
 /* return dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
  * 		helper function to perform wide functions based on opc if opi == WMOVE
- * @return 0 if successful 1 if fail
 */
-static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
+static void dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
 	int hw = ((instruction >> SHIFT_HW) & MASK(2));
 	uint64_t imm16 = (instruction >> SHIFT_IMM16) & MASK(16);
 	if (sf == 0 && hw > 1) {
-		exit(1);
+		fprintf(stderr, "Error: cannot shift by more than 16 bits in W-register.\n");
+		exit(EXIT_FAILURE);
 	}
 	imm16 <<= (hw * 16);
 	uint64_t rd_val = 0;
@@ -160,18 +160,18 @@ static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, 
 			state->regs[rd_index] = (sf == 1)? rd_val : (uint32_t)rd_val;
 			break;
 		default:
-			exit(1);
+			fprintf(stderr, "Error: invalid opc.\n");
+			exit(EXIT_FAILURE);
 	} 
-	return 0;
+	return;
 }
 
 /*
  * @brief Executes Data Processing Instruction (Register)
  * @param instruction 32-bit unsigned instruction 
  * @param state* pointer to the machine state
- * @return 0 if program exits successfully; 1 if program failed
  */
-int dpi_reg(uint32_t instruction, mstate_t *state) {
+void dpi_reg(uint32_t instruction, mstate_t *state) {
 	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
 	int rn_index = (instruction >> SHIFT_RN) & MASK(5);
 	int rm_index = (instruction >> SHIFT_RM) & MASK(5);
@@ -181,11 +181,12 @@ int dpi_reg(uint32_t instruction, mstate_t *state) {
 	uint32_t opr = (instruction >> SHIFT_OPR) & MASK(4);
 	OpGroup opgroup = get_op_group(m, opr);
 	if (opgroup == ARITHMETIC || opgroup == BIT_LOGIC) {
-		return dpi_reg_arith_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index, opgroup);
+		dpi_reg_arith_bitlogic(instruction, state, sf, opc, rd_index, rn_index, rm_index, opgroup);
 	} else if (opgroup == MULTIPLY) {
-		return dpi_reg_mult(instruction, state, sf, opc, rd_index, rn_index, rm_index);
+		dpi_reg_mult(instruction, state, sf, opc, rd_index, rn_index, rm_index);
 	} else {
-		exit(1); // opgroup UNKNOWN
+		fprintf(stderr, "Error: invalid OpGroup.\n");
+		exit(EXIT_FAILURE); // opgroup UNKNOWN
 	}
 }
 
@@ -211,7 +212,7 @@ static OpGroup get_op_group(int m, uint32_t opr) {
 /*
  * helper function for dpi_reg to do arithmetic/bit-logic instructions
  */
-static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
+static void dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
 	//int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
@@ -232,26 +233,29 @@ static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf,
 			break;
 		case ROR:
 			if (opgroup != BIT_LOGIC) {
-				return 1; // invalid, no ror for arithmetic
+				fprintf(stderr, "Error: cannot do rotate right for arithmetic instruction.\n");
+				exit(EXIT_FAILURE); // invalid, no ror for arithmetic
 			}
 			op2 = (sf == 1)? (rm_val >> shift) | (rm_val << (64 - shift)) : (((uint32_t)rm_val) >> shift) | (((uint32_t)rm_val) << (32 - shift));
 			break; 
 		default:
-			exit(1); // invalid shift
+			fprintf(stderr, "Error: invalid shift.\n");
+			exit(EXIT_FAILURE); // invalid shift
 	}
 	if (opgroup == ARITHMETIC) {
-		return dpi_arith(state, sf, opc, rd_index, rn_index, op2); 
+		dpi_arith(state, sf, opc, rd_index, rn_index, op2); 
 	} else if (opgroup == BIT_LOGIC) {
-		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, op2); 
+		dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, op2); 
 	} else {
-		exit(1); //invalid opgroup
+		fprintf(stderr, "Error: invalid OpGroup.\n");
+		exit(EXIT_FAILURE); //invalid opgroup
 	}
 }
 
 /*
  * helper function for dpi_reg_arith_bitlogic to do bit-logic instructions
  */
-static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
+static void dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	int n = (instruction >> SHIFT_NEGATED) & MASK(1);
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]);
 	if (rn_index == REG32) { rn_val = 0; } // read ZR
@@ -260,38 +264,30 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 		case 0: // and, bic
 			if (n == 0) { // and
 				result = rn_val & op2;
-			} else if (n == 1) { // bic
+			} else { // bic
 				result = rn_val & ~op2;
-			} else {
-				exit(1); // invalid n
-			}
+			} 
 			break;
 		case 1: // orr, orn
 			if (n == 0) { // orr
 				result = rn_val | op2;
-			} else if (n == 1) { // orn
+			} else { // orn
 				result = rn_val | ~op2;
-			} else {
-				exit(1); // invalid n
-			}
+			} 
 			break;
 		case 2: // eor, eon
 			if (n == 0) { // eor
 				result = rn_val ^ op2;
-			} else if (n == 1) { // eon
+			} else { // eon
 				result = rn_val ^ ~op2;
-			} else {
-				exit(1); // invalid n
-			}
+			} 
 			break;
 		case 3: // ands, bics
 			if (n == 0) { // ands
 				result = rn_val & op2;
-			} else if (n == 1) { // bics
+			} else { // bics
 				result = rn_val & ~op2;
-			} else {
-				exit(1); // invalid n
-			}
+			} 
 			const int msb = (sf == 1)? 63 : 31;
 			const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative	
 			state->ps.N = result_N; // set N to the sign bit of result
@@ -300,20 +296,21 @@ static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int o
 			state->ps.V = 0;
 			break;
 		default:
-			exit(1); // invalid opc
+			fprintf(stderr, "Error: Invalid opc.\n");
+			exit(EXIT_FAILURE); // invalid opc
 	}
-	if (rd_index == REG32) { return 0; } // write to ZR
+	if (rd_index == REG32) { return; } // write to ZR
 	if (sf == 0) { result = (uint32_t)result; }
 	state->regs[rd_index] = result;
-	return 0;
+	return;
 }
 
 /*
  * helper function for dpi_reg to do multiply instructions
  */
-static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
+static void dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index) {
 	assert(opc == 0);
-	if (rd_index == REG32) { return 0; } // write to ZR
+	if (rd_index == REG32) { return; } // write to ZR
 	int x = (instruction >> SHIFT_X) & MASK(1);
 	int ra_index = (instruction >> SHIFT_RA) & MASK(5);
 	uint64_t ra_val = (sf == 1)? state->regs[ra_index] : (uint32_t)(state->regs[ra_index]);
@@ -327,7 +324,7 @@ static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, 
 	} else { // x == 1, msub
 		state->regs[rd_index] = ra_val - (rn_val * rm_val);
 	}
-	return 0;
+	return;
 }
 
 
