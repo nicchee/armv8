@@ -102,6 +102,7 @@ static void decode_execute(uint32_t ins, mstate_t *mState_tp) {
 	} else {
 		exit (EXIT_FAILURE);
 	}
+}
 
 // DPI Reg protoypes
 extern int dpi_reg(uint32_t instruction, mstate_t *state);
@@ -120,11 +121,10 @@ int main(int argc, char **argv) {
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
 	free_state(&mState); // move to after the cycle?
-	bool run = true;
-	while (run) {
+	while (true) {
 		uint32_t ins = fetch(&mState);
 		if (ins == STOP) {
-			output(&mState);
+			//output(&mState);
 			break;
 		} else {
 			decode_execute(ins, &mState);
