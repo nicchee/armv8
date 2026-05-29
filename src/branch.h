@@ -1,1 +1,1 @@
-extern int branch(uint32_t instruction, mstate_t *state);
+extern void branch(uint32_t instruction, mstate_t *state);

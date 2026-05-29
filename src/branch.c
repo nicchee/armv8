@@ -47,7 +47,7 @@ static int check_cond(int cond, pstate_t pstate);
 
 // public 
 
-int branch(uint32_t instruction, mstate_t *state){
+void branch(uint32_t instruction, mstate_t *state){
     int64_t offset = 0;
     if ((instruction & MASKUNCONDOP) == UNCONDOP) {
         int32_t simm26 = (instruction >> SHIFT_SIMM26) & MASK(SIMM26_SIZE);
@@ -61,12 +61,12 @@ int branch(uint32_t instruction, mstate_t *state){
         switch (branch_cond) {
             case -1: 
                 fprinf(stderr, "Error: Instruction not recognised for any branch operation.\n");
-                exit(EXIT_FAILURE);
+                exit(EXIT_FAILURE); // not recognised branch operation
             case 0: 
-                exit(EXIT_SUCCESS); // does not satisfies cond
+                return; // does not satisfies cond
             case 1: 
                 state->pc += (int64_t)(simm19) * INSTR_SIZE; // PC = PC + simm19
-                exit(EXIT_SUCCESS); // satisfies cond
+                return; // satisfies cond
         }
     } else {
         fprinf(stderr, "Error: Instruction not recognised for any branch operation.\n");
