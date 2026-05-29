@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "emulate.h"
+#include "machine_state.h"
 #include "single_data_transfer.h"
 
 // Position of each instruction part for Single Data Transfer & Load Literal
@@ -28,10 +28,7 @@
 // Private helper functions
 static uint64_t sgx_simm19(uint32_t value);
 static uint64_t sgx_simm9(uint32_t value);
-static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes);
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
-
-
 
 /*
   * @function: implement the single data transfer and load literal
@@ -156,15 +153,6 @@ static uint64_t sgx_simm9(uint32_t value) {
     result |= ~0x00000000000003FF;
   }
   return result;
-}
-
-static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
-  check_addr(addr, num_bytes);
-  uint64_t value = 0;
-  for (int i = 0; i < num_bytes; i++) {
-    value |=  ((uint64_t)state->memory[addr + i]) << (i * 8);
-  }
-  return value;
 }
 
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
