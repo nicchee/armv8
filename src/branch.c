@@ -2,10 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "branch.h"
-#include "emulate.h"
+#include "machine_state.h"
 
-// Move this to mstate in the very near future
-#define INSTR_SIZE 4 
 
 // Type of Branches
 

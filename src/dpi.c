@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "emulate.h"
+#include "machine_state.h"
 #include "dpi.h"
 
 // Data Processing Instruction Immediate + Register
@@ -12,9 +12,6 @@
 #define SHIFT_RN 5
 #define SHIFT_OPC 29
 #define SHIFT_SF 31
-
-// Special Register
-#define REG32 31
 
 // Data Processing Instruction (Immediate)
 // Position of each instruction part
