@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <string.h>
 #include "emulate.h"
@@ -49,6 +50,9 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	}
 }
 
+static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes);
+static void print(mstate_t *state, FILE *fp);
+
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
 		fprintf(stderr, "There must be 1 or 2 arguments passed to %s", argv[0]);
@@ -68,6 +72,51 @@ int main(int argc, char **argv) {
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+void print(mstate_t *state, FILE *fp) {
+	fprintf(fp, "Registers:\n");
+	for (int i = 0; i < 31; i++) {
+		fprintf(fp, "X%02d = %016lx\n", i, state->regs[i]);
+	}
+	fprintf(fp, "\nPC = %lu\n", state->pc);
+	fprintf(fp, "\nPSTATE : ");
+	if (state->ps.N == true) {
+		fprintf(fp, "N");
+	} else {
+		fprintf(fp, "-");
+	}
+	if (state->ps.Z == true) {
+		fprintf(fp, "Z");
+	} else {
+		fprintf(fp, "-");
+	}
+	if (state->ps.C == true) {
+		fprintf(fp, "C");
+	} else {
+		fprintf(fp, "-");
+	}	
+	if (state->ps.V == true) {
+		fprintf(fp, "V\n");
+	} else {
+		fprintf(fp, "-\n");
+	}
+	fprintf(fp, "Non-zero memory:\n");
+	for (uint64_t addr = 0; addr < MEMSIZE; addr += 4) {
+		uint32_t result = read_memory(state, addr, 4);
+		if (state->memory[addr] != 0) {
+			fprintf(fp, "0x%08lx: 0x%08x\n", addr, result);
+		}
+	}
+}
+
+static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
+  check_addr(addr, num_bytes);
+  uint64_t value = 0;
+  for (int i = 0; i < num_bytes; i++) {
+    value |=  ((uint64_t)state->memory[addr + i]) << (i * 8);
+  }
+  return value;
 }
 
 static void init(mstate_t *mstate_p) {
@@ -106,15 +155,7 @@ static void free_state(mstate_t *mstate_p) {
 
 // Fetch stage
 static uint32_t fetch(mstate_t *mstate_p) {
-	if( mstate_p->pc + 4 > MEMSIZE || (int64_t)mstate_p->pc < 0 ) { // check if memory out of bound
-		fprintf(stderr, "Memory address out of bound!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(mstate_p->pc % 4) { // check if memory address is 4-byte aligned
-		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
-		exit(EXIT_FAILURE);
-	}
+	check_addr(mstate_p->pc, 4);
 
 	uint8_t *instraddr = (mstate_p->memory + mstate_p->pc);
 
@@ -125,15 +166,17 @@ static uint32_t fetch(mstate_t *mstate_p) {
 	return ins;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+/*
+  * @function: check if address is Out-of-Bounds
+  *	check if its 4 byte aligned
+*/
+void check_addr(uint64_t addr, int num_bytes) {
+	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+		fprintf(stderr, "Memory address out of bound!\n");
+		exit(EXIT_FAILURE);
+	}
+	if(addr % 4) { // check if memory address is 4-byte aligned
+		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
+		exit(EXIT_FAILURE);
+	}
+}
