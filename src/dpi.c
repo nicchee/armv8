@@ -9,6 +9,8 @@
 // Position of each instruction part
 #define SHIFT_RD 0
 #define SHIFT_RN 5
+#define SHIFT_OPC 29
+#define SHIFT_SF 31
 
 // Mask Macro
 #define MASK(x) ((1<<(x)) - 1)
@@ -23,8 +25,6 @@
 #define SHIFT_IMM16 5
 #define SHIFT_HW 21
 #define SHIFT_OPI 23
-#define SHIFT_OPC 29
-#define SHIFT_SF 31
 
 // OPI instruction
 #define ARITH 2 
@@ -36,8 +36,6 @@
 #define SHIFT_RM 16
 #define SHIFT_OPR 21
 #define SHIFT_M 28
-#define SHIFT_OPC 29
-#define SHIFT_SF 31
 
 // Arithmetic and Logical
 #define ARITH_OPR_MASK 9
@@ -63,14 +61,15 @@ typedef enum {
     MULTIPLY
 } OpGroup;
 
+// DPI Imm + Reg private functions
+static int dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
+
 // DPI Imm private functions
-static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
 // DPI Reg private functions
 static OpGroup get_op_group(int m, uint32_t opr);
 static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup);
-static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
 static int dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2);
 static int dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index);
 
@@ -86,7 +85,11 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 	int sf = (instruction >> SHIFT_SF) & MASK(1);
 	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	if (opi == ARITH ) {
-		return dpi_imm_arith(instruction, state, sf, opc, rd_index);
+		uint32_t imm12 = (instruction >> SHIFT_IMM12) & MASK(12);
+		int sh = (instruction >> SHIFT_SH) & MASK(1);
+		if (sh == 1) {imm12 <<= 12;}
+		int rn_index = (instruction >> SHIFT_RN) & MASK(5); 
+		return dpi_arith(state, sf, opc, rd_index, rn_index, imm12);
 	} else if (opi == WMOVE) {
 		return dpi_imm_wide(instruction, state, sf, opc, rd_index);
 	} else {
@@ -94,40 +97,39 @@ int dpi_imm(uint32_t instruction, mstate_t *state) {
 	}
 }
 
-/* return dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
- * 		helper function to perform arith functions based on opc if opi == ARITH
- * @return 0 if successful 1 if fail
-*/
-static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index) {
-	if (opc > 3) {return 1;} // opc code not recognised
-	uint32_t imm12 = (instruction >> SHIFT_IMM12) & MASK(12);
-	int sh = (instruction >> SHIFT_SH) & MASK(1);
-	if (sh == 1) {imm12 <<= 12;}
-	int rn_index = (instruction >> SHIFT_RN) & MASK(5); 
-	if (rn_index == REG32) {return 0;}
-	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)state->regs[rn_index];
-	uint64_t result = (opc <= 1)? rn_val + imm12 : rn_val - imm12;
-	if (sf == 0) {result = (uint32_t)result;}
-	if ((opc & 1) == 0){ // without flag
-		if (rd_index == REG32){
-			return 0; // writes to SP
-		} 
+/* helper function for dpi imm and dpi reg
+ * if dpi imm, op2 is imm12
+ * if dpi reg, op2 is Rm shifted (operand) many bits by the shift encoded in (shift)
+ * return 0 if successful, 1 if failed
+ */
+static int dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
+	if (rn_index == REG32) { return 0; } // encodes SP
+	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
+	uint64_t result = (opc <= 1)? rn_val + op2 : rn_val - op2;
+	if (sf == 0) { result = (uint32_t)result; }
+	if ((opc & 1) == 0) { // without flag
+		if (rd_index == REG32) {
+			return 0; // encodes SP
+		}
 		state->regs[rd_index] = result; // opc == 0 or 2
 	} else { // with flag
-		// opc == 1 or 3
 		const int msb = (sf == 1)? 63 : 31;
-		state->ps.N = ((result >> msb) & 1) == 1; // set N if negative (MSB = 1)
-		state->ps.Z = result == 0; // set Z flag if = 0
+		const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative
+		state->ps.N = result_N; // set N to the sign bit of result
+		state->ps.Z = result == 0; // set Z if result is 0
 		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
-		const bool imm12_N = (int32_t)imm12 < 0; // check if imm12 is negative
-		if (opc == 1) {
-			state->ps.C = result < imm12;
-			state->ps.V = (!state->ps.N && rn_N && imm12_N ) || (state->ps.N && !rn_N && !imm12_N );
-		} else { 
-			state->ps.C = rn_val >= imm12;
-			state->ps.V = (state->ps.N && !rn_N && imm12_N ) || (!state->ps.N && rn_N && !imm12_N );
+		const bool op2_N = ((op2 >> msb) & 1) == 1; // check if op2 is negative
+		if (opc == 1) { // addition, opc == 1
+			state->ps.C = result < op2;
+			state->ps.V = (!result_N && rn_N && op2_N) || (result_N && !rn_N && !op2_N);
+		} else { // subtraction, opc == 3
+			state->ps.C = rn_val >= op2;
+			state->ps.V = (result_N && !rn_N && op2_N) || (!result_N && rn_N && !op2_N);
 		}
-		if (rd_index != REG32) { state->regs[rd_index] = result; }
+		if (rd_index == REG32) {
+			return 0; // encodes ZR
+		}
+		state->regs[rd_index] = result;
 	}
 	return 0;
 }
@@ -238,47 +240,12 @@ static int dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf,
 			exit(1); // invalid shift
 	}
 	if (opgroup == ARITHMETIC) {
-		return dpi_reg_arith(state, sf, opc, rd_index, rn_index, op2); 
+		return dpi_arith(state, sf, opc, rd_index, rn_index, op2); 
 	} else if (opgroup == BIT_LOGIC) {
 		return dpi_reg_bitlogic(instruction, state, sf, opc, rd_index, rn_index, op2); 
 	} else {
 		exit(1); //invalid opgroup
 	}
-}
-
-/*
- * helper function for dpi_reg_arith_bitlogic to do arithmetic instructions
- */
-static int dpi_reg_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
-	if (rn_index == REG32) { return 0; } // encodes SP
-	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
-	uint64_t result = (opc <= 1)? rn_val + op2 : rn_val - op2;
-	if (sf == 0) { result = (uint32_t)result; }
-	if ((opc & 1) == 0) { // without flag
-		if (rd_index == REG32) {
-			return 0; // encodes SP
-		}
-		state->regs[rd_index] = result; // opc == 0 or 2
-	} else { // with flag
-		const int msb = (sf == 1)? 63 : 31;
-		const bool result_N = ((result >> msb) & 1) == 1; // check if result is negative
-		state->ps.N = result_N; // set N to the sign bit of result
-		state->ps.Z = result == 0; // set Z if result is 0
-		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
-		const bool op2_N = ((op2 >> msb) & 1) == 1; // check if op2 is negative
-		if (opc == 1) { // addition, opc == 1
-			state->ps.C = result < op2;
-			state->ps.V = (!result_N && rn_N && op2_N) || (result_N && !rn_N && !op2_N);
-		} else { // subtraction, opc == 3
-			state->ps.C = rn_val >= op2;
-			state->ps.V = (result_N && !rn_N && op2_N) || (!result_N && rn_N && !op2_N);
-		}
-		if (rd_index == REG32) {
-			return 0; // encodes ZR
-		}
-		state->regs[rd_index] = result;
-	}
-	return 0;
 }
 
 /*
