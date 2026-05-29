@@ -30,7 +30,7 @@ static uint64_t sgx_simm19(uint32_t value);
 static uint64_t sgx_simm9(uint32_t value);
 static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes);
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
-static void check_addr(uint64_t addr, int num_bytes);
+
 
 
 /*
@@ -176,13 +176,4 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
   return;
 }
 
-/*
-  * @function: check if address is Out-of-Bounds
-*/
-static void check_addr(uint64_t addr, int num_bytes) {
-  if (addr + num_bytes > MEMSIZE) {
-    fprintf(stderr, "Error: Address out-of-bounds.\n");
-    exit(EXIT_FAILURE);
-  }
-  return;
-}
+

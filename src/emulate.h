@@ -24,5 +24,7 @@ typedef struct {
 	uint8_t *memory;
 } mstate_t;
 
+extern void check_addr(uint64_t addr, int num_bytes);
+
 #endif
 

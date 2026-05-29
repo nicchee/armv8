@@ -155,15 +155,7 @@ static void free_state(mstate_t *mstate_p) {
 
 // Fetch stage
 static uint32_t fetch(mstate_t *mstate_p) {
-	if( mstate_p->pc + 4 > MEMSIZE || (int64_t)mstate_p->pc < 0 ) { // check if memory out of bound
-		fprintf(stderr, "Memory address out of bound!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if(mstate_p->pc % 4) { // check if memory address is 4-byte aligned
-		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
-		exit(EXIT_FAILURE);
-	}
+	check_addr(mstate_p->pc, 4);
 
 	uint8_t *instraddr = (mstate_p->memory + mstate_p->pc);
 
@@ -172,4 +164,19 @@ static uint32_t fetch(mstate_t *mstate_p) {
 					| (uint32_t) *(instraddr+2) << 16
 					| (uint32_t) *(instraddr+3) << 24;
 	return ins;
+}
+
+/*
+  * @function: check if address is Out-of-Bounds
+  *	check if its 4 byte aligned
+*/
+void check_addr(uint64_t addr, int num_bytes) {
+	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+		fprintf(stderr, "Memory address out of bound!\n");
+		exit(EXIT_FAILURE);
+	}
+	if(addr % 4) { // check if memory address is 4-byte aligned
+		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
+		exit(EXIT_FAILURE);
+	}
 }
