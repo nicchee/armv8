@@ -1,11 +1,42 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "emulate.h"
 #include "single_data_transfer.h"
+
+// Position of each instruction part for Single Data Transfer & Load Literal
+#define SHIFT_RT 0
+#define SHIFT_XN 5
+#define SHIFT_SIMM19 5
+#define SHIFT_OFFSET 10
+#define SHIFT_L 22
+#define SHIFT_U 24
+#define SHIFT_SF 30
+#define SHIFT_OP 31
+#define SHIFT_XM 5
+
+// Width of each instcution part for Single Data Transfer & Load Literal
+#define WIDTH_RT 5
+#define WIDTH_XN 5
+#define WIDTH_SIMM19 19
+#define WIDTH_OFFSET 12
+#define WIDTH_L 1
+#define WIDTH_U 1
+#define WIDTH_SF 1
+#define WIDTH_OP 1
+#define WIDTH_XM 5
+
+// Private helper functions
+static uint64_t sgx_simm19(uint32_t value);
+static uint64_t sgx_simm9(uint32_t value);
+static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes);
+static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
+static void check_addr(uint64_t addr, int num_bytes);
+
 
 /*
   * @function: implement the single data transfer and load literal
 */
-int single_data_transfer(uint32_t instruction, mstate_t *state) {
+void single_data_transfer(uint32_t instruction, mstate_t *state) {
   // Extraction of bits for Single Data Transfer & Load Literal
   uint32_t rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
   uint32_t xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
@@ -107,11 +138,11 @@ int single_data_transfer(uint32_t instruction, mstate_t *state) {
         read_memory(state, addr, 4);
       }
   }
-  return 0;
+  return;
 }
 
 // Helper functions
-uint64_t sgx_simm19(uint32_t value) {
+static uint64_t sgx_simm19(uint32_t value) {
   uint64_t result = value & 0x000000000007FFFF;
   if (result & 0x0000000000040000) {
     result |= ~0x000000000007FFFF;
@@ -119,7 +150,7 @@ uint64_t sgx_simm19(uint32_t value) {
   return result;
 }
 
-uint64_t sgx_simm9(uint32_t value) {
+static uint64_t sgx_simm9(uint32_t value) {
   uint64_t result = value & 0x00000000000003FF;
   if (result & 0x0000000000000200) {
     result |= ~0x00000000000003FF;
@@ -127,7 +158,7 @@ uint64_t sgx_simm9(uint32_t value) {
   return result;
 }
 
-uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
+static uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
   check_addr(addr, num_bytes);
   uint64_t value = 0;
   for (int i = 0; i < num_bytes; i++) {
@@ -136,19 +167,22 @@ uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
   return value;
 }
 
-void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
+static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
   check_addr(addr, num_bytes);
   uint64_t value = state->regs[rt];
   for (int i = 0; i < num_bytes; i++) {
     state->memory[addr + i] = (uint8_t)(value >> (i * 8));
   }
+  return;
 }
 
 /*
   * @function: check if address is Out-of-Bounds
 */
-void check_addr(uint64_t addr, int num_bytes) {
+static void check_addr(uint64_t addr, int num_bytes) {
   if (addr + num_bytes > MEMSIZE) {
-    exit(1);
+    fprintf(stderr, "Error: Address out-of-bounds.\n");
+    exit(EXIT_FAILURE);
   }
+  return;
 }
