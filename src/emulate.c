@@ -171,13 +171,22 @@ static void free_state(mstate_t *mstate_p) {
 
 // Fetch stage
 static uint32_t fetch(mstate_t *mstate_p) {
-	uint8_t *memaddr = (mstate_p->memory + mstate_p->pc);
-	uint32_t ins = 	(uint32_t) *memaddr
-					| (uint32_t) *(memaddr+1) << 8
-					| (uint32_t) *(memaddr+2) << 16
-					| (uint32_t) *(memaddr+3) << 24;
-	uint32_t ins = *( (uint32_t *)(mstate_p->memory + mstate_p->pc) ); 
-	mstate_p->pc += 4;
+	if( mstate_p->pc + 4 > MEMSIZE || (int64_t)mstate_p->pc < 0 ) { // check if memory out of bound
+		fprintf(stderr, "Memory address out of bound!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(mstate_p->pc % 4) { // check if memory address is 4-byte aligned
+		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	uint8_t *instraddr = (mstate_p->memory + mstate_p->pc);
+
+	uint32_t ins = 	(uint32_t) *instraddr
+					| (uint32_t) *(instraddr+1) << 8
+					| (uint32_t) *(instraddr+2) << 16
+					| (uint32_t) *(instraddr+3) << 24;
 	return ins;
 }
 
