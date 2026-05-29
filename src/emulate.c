@@ -11,36 +11,36 @@ int main(int argc, char **argv) {
 }
 
 void print(mstate_t *state, FILE *fp) {
-	fprintf(fp, "Registers:\n")
-	for (int i = 0; i < 31, i++) {
+	fprintf(fp, "Registers:\n");
+	for (int i = 0; i < 31; i++) {
 		fprintf(fp, "X%02d = %016lx\n", i, state->regs[i]);
 	}
 	fprintf(fp, "\nPC = %lu\n", state->pc);
 	fprintf(fp, "\nPSTATE : ");
-	if (state->pc.N == true) {
+	if (state->ps.N == true) {
 		fprintf(fp, "N");
 	} else {
 		fprintf(fp, "-");
 	}
-	if (state->pc.Z == true) {
+	if (state->ps.Z == true) {
 		fprintf(fp, "Z");
 	} else {
 		fprintf(fp, "-");
 	}
-	if (state->pc.C == true) {
+	if (state->ps.C == true) {
 		fprintf(fp, "C");
 	} else {
 		fprintf(fp, "-");
 	}	
-	if (state->pc.V == true) {
+	if (state->ps.V == true) {
 		fprintf(fp, "V\n");
 	} else {
 		fprintf(fp, "-\n");
 	}
-	fprintf(fp, "Non-zero memory:\n")
+	fprintf(fp, "Non-zero memory:\n");
 	for (uint64_t addr = 0; addr < MEMSIZE; addr += 4) {
 		uint32_t result = read_memory(state, addr, 4);
-		if (state.memory[i] != 0) {
+		if (state->memory[addr] != 0) {
 			fprintf(fp, "0x%08lx: 0x%08x\n", addr, result);
 		}
 	}
