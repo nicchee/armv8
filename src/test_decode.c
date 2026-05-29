@@ -28,16 +28,6 @@
 
 uint32_t instr[6] = {0xF9400260, 0xB9000C25, 0xF8408423, 0xF8606861, 0x58000040, 0xF85F8041};
 
-/*
-    instr[1] = 1111 1001 0100 0000 0000 0010 0110 0000
-        op: 1 - SDT
-        sf: 1 - 64-bits Rt
-        U: 1 - Unsigned Offset (Addressing mode)
-        L: 1 - load
-        
-
-*/
-
 int main(void) {
     for (int i = 0; i < 6; i++) {
         uint32_t instruction = instr[i];
@@ -53,8 +43,6 @@ int main(void) {
         printf("Instruction %d (0x%08x):\n", i, instruction);
         printf(" op=%u, sf=%u, U=%u, L=%u\n", op, sf, u, l);
         printf(" rt=%u, xn=%u, simm19=%u, offset=%u\n", rt, xn, simm19, offset);
-
-
     }
     return 0;
 }
