@@ -13,9 +13,6 @@
 #define SHIFT_OPC 29
 #define SHIFT_SF 31
 
-// Mask Macro
-#define MASK(x) ((1<<(x)) - 1)
-
 // Special Register
 #define REG32 31
 

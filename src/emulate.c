@@ -24,10 +24,9 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 #define LOADSTORE 4
 #define BRANCH 10
 
-// End of Instruction Macros
+#define STOP 0x8a000000
 
-// Mask Macro
-#define MASK(x) ((1<<(x)) - 1)
+// End of Instruction Macros
 
 // Special Register
 #define REG32 31
@@ -95,7 +94,7 @@ static void bin_file_load(uint8_t *memory, const char *fileName){
 		fclose(in);
 		exit(EXIT_FAILURE);
 	}
-	size_t bytesRead = fread(memory, sizeof(uint8_t), fileSize, in);
+	fread(memory, sizeof(uint8_t), fileSize, in);
 	fclose(in);
 }
 
