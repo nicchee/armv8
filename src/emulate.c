@@ -6,7 +6,7 @@
 static void init(mstate_t *mState_tp);
 static void bin_file_load(uint8_t *memory, const char *fileName);
 static void free_state(mstate_t *mState_tp);
-static void fetch(mstate_t *mState_tp);
+static uint32_t fetch(mstate_t *mState_tp);
 static void decode_execute(uint32_t ins, mstate_t *mState_tp);
 
 // Instruction
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	free_state(&mState);
 	bool run = true;
 	while (run) {
-		ins = fetch(&mState);
+		uint32_t ins = fetch(&mState);
 		if (ins == STOP) {
 			output(&mState);
 			break;
@@ -128,14 +128,14 @@ static void free_state(mstate_t *mState_tp) {
 }
 
 // Fetch stage
-static uint32_t fetch(mState *mState_tp) {
+static uint32_t fetch(mstate_t *mState_tp) {
 	uint32_t ins = *( (uint32_t *)(mState_tp->memory + mState_tp->pc) ); 
 	mState_tp->pc += 4;
 	return ins;
 }
 
 // Decode and execute stage - skeleton
-static void decode_execute(uint32_t ins, mState *mState_tp) {
+static void decode_execute(uint32_t ins, mstate_t *mState_tp) {
 	uint32_t op0 = (ins >> 25) & 0xF; //get bits 28-25
 	
 	if ((op0 & 0xE) == 0x8) { // 100x & 1110
