@@ -60,7 +60,7 @@ void branch(uint32_t instruction, mstate_t *state){
         int branch_cond = check_cond(cond, state->ps);
         switch (branch_cond) {
             case -1: 
-                fprinf(stderr, "Error: Instruction not recognised for any branch operation.\n");
+                fprintf(stderr, "Error: Instruction not recognised for any branch operation.\n");
                 exit(EXIT_FAILURE); // not recognised branch operation
             case 0: 
                 return; // does not satisfies cond
@@ -69,7 +69,7 @@ void branch(uint32_t instruction, mstate_t *state){
                 return; // satisfies cond
         }
     } else {
-        fprinf(stderr, "Error: Instruction not recognised for any branch operation.\n");
+        fprintf(stderr, "Error: Instruction not recognised for any branch operation.\n");
         exit(EXIT_FAILURE);
     }
 }
