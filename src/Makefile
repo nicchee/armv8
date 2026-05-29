@@ -13,7 +13,7 @@ assemble: assemble.o
 emulate: emulate.o branch.o
 
 emulate.o: emulate.c emulate.h branch.h
-branch.o: branch.c branch.h emulate.h
+branch.o: branch.c emulate.h branch.h
 
 clean:
 	$(RM) *.o assemble emulate
