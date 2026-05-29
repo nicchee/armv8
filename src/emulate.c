@@ -15,13 +15,10 @@ static void decode_execute(uint32_t ins, mstate_t *mState_tp);
 #define MASK0111 7
 #define MASK0101 5
 
-typedef enum {
-	DPI_IMM,
-	DPI_REG,
-	LOADSTORE,
-	BRANCH,
-	UNKNOWN
-} InstrCat;
+#define DPI_IMM 8
+#define DPI_REG 5
+#define LOADSTORE 4
+#define BRANCH 10
 
 // End of Instruction Macros
 
@@ -53,20 +50,22 @@ extern int dpi_imm(uint32_t instruction, mstate_t *state);
 static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
-// Instruction Category Identifier
-InstrCat get_instr_cat(uint32_t instruction) {
-	uint8_t op0 = instruction >> SHIFT_OP0;
-	if ((op0 & MASK1110) == 8) { // checks 100x
-		return DPI_IMM;
-	} else if ((op0 & MASK0111) == 5) { // checks x101 
-		return DPI_REG;
-	} else if ((op0 & MASK0101) == 4) { // checks x1x0
-		return LOADSTORE;
-	} else if ((op0 & MASK1110) == 10) { // checks 101x
-		return BRANCH;
+// Decode and execute stage - skeleton
+static void decode_execute(uint32_t ins, mstate_t *mState_tp) {
+	uint8_t op0 = ins >> SHIFT_OP0;
+
+	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
+		dpi_imm(ins, mState_tp);
+	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
+		dpi_reg(ins, mState_tp);
+	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
+		// load store
+	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
+		// branch remember to dec pc by 4 before jmp by offset     
 	} else {
-		return UNKNOWN;
+		exit (EXIT_FAILURE);
 	}
+
 }
 
 int main(int argc, char **argv) {
@@ -77,7 +76,7 @@ int main(int argc, char **argv) {
 	mstate_t mState;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
-	free_state(&mState);
+	free_state(&mState); // move to after the cycle?
 	bool run = true;
 	while (run) {
 		uint32_t ins = fetch(&mState);
@@ -134,24 +133,6 @@ static uint32_t fetch(mstate_t *mState_tp) {
 	return ins;
 }
 
-// Decode and execute stage - skeleton
-static void decode_execute(uint32_t ins, mstate_t *mState_tp) {
-	uint32_t op0 = (ins >> 25) & 0xF; //get bits 28-25
-	
-	if ((op0 & 0xE) == 0x8) { // 100x & 1110
-		dpi_imm(ins, mState_tp);
-	} 
-	else if ((op0 & 0x7) == 0x5) { // x101 & 0111 
-		dpi_reg(ins, mState_tp);
-	} 
-	else if ((op0 & 0xB) == 0x8) { // 1x00 & 1011
-		//Load/store
-	}
-	else if ((op0 & 0xE) == 0xA) { // 101x & 1110
-		//branch - remember to dec pc by 4 before jmp by offset	       
-	}
-
-}
 
 /*
  * @brief Executes Data Processing Instruction (Immediate) 
