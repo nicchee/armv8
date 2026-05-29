@@ -5,11 +5,11 @@
 #include <string.h>
 
 // Instruction
-static void init(mstate_t *mState_tp);
+static void init(mstate_t *mstate_p);
 static void bin_file_load(uint8_t *memory, const char *fileName);
-static void free_state(mstate_t *mState_tp);
-static uint32_t fetch(mstate_t *mState_tp);
-static void decode_execute(uint32_t ins, mstate_t *mState_tp);
+static void free_state(mstate_t *mstate_p);
+static uint32_t fetch(mstate_t *mstate_p);
+static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 
 #define SHIFT_OP0 25
 #define MASK1110 14
@@ -88,13 +88,13 @@ static int dpi_imm_arith(uint32_t instruction, mstate_t *state, int sf, int opc,
 static int dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
 
 // Decode and execute stage - skeleton
-static void decode_execute(uint32_t ins, mstate_t *mState_tp) {
+static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	uint8_t op0 = ins >> SHIFT_OP0;
 
 	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
-		dpi_imm(ins, mState_tp);
+		dpi_imm(ins, mstate_p);
 	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
-		dpi_reg(ins, mState_tp);
+		dpi_reg(ins, mstate_p);
 	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
 		// load store
 	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
@@ -135,13 +135,13 @@ int main(int argc, char **argv) {
 
 // init();
 // 		initialise machine state;
-static void init(mstate_t *mState_tp) {
-	memset(mState_tp->regs, 0, sizeof(mState_tp->regs)); // zero all registers
-	mState_tp->zr = 0;
-	mState_tp->pc = 0;
-	mState_tp->ps = (pstate_t){false, true, false, false}; //set Z flag only
-  	mState_tp->memory = malloc(MEMSIZE);
-	memset(mState_tp->memory, 0, MEMSIZE); //set all memory to 0
+static void init(mstate_t *mstate_p) {
+	memset(mstate_p->regs, 0, sizeof(mstate_p->regs)); // zero all registers
+	mstate_p->zr = 0;
+	mstate_p->pc = 0;
+	mstate_p->ps = (pstate_t){false, true, false, false}; //set Z flag only
+  	mstate_p->memory = malloc(MEMSIZE);
+	memset(mstate_p->memory, 0, MEMSIZE); //set all memory to 0
 }
 
 // bin_file_load(memory, argv[1]);
@@ -165,14 +165,15 @@ static void bin_file_load(uint8_t *memory, const char *fileName){
 }
 
 // Freeing the memory (avoiding memory leak)
-static void free_state(mstate_t *mState_tp) {
-	free(mState_tp->memory);
+static void free_state(mstate_t *mstate_p) {
+	free(mstate_p->memory);
 }
 
 // Fetch stage
-static uint32_t fetch(mstate_t *mState_tp) {
-	uint32_t ins = *( (uint32_t *)(mState_tp->memory + mState_tp->pc) ); 
-	mState_tp->pc += 4;
+static uint32_t fetch(mstate_t *mstate_p) {
+	uint8_t memaddr = mstate_p;
+	uint32_t ins = *( (uint32_t *)(mstate_p->memory + mstate_p->pc) ); 
+	mstate_p->pc += 4;
 	return ins;
 }
 
