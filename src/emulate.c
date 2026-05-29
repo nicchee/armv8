@@ -171,7 +171,11 @@ static void free_state(mstate_t *mstate_p) {
 
 // Fetch stage
 static uint32_t fetch(mstate_t *mstate_p) {
-	uint8_t memaddr = mstate_p;
+	uint8_t *memaddr = (mstate_p->memory + mstate_p->pc);
+	uint32_t ins = 	(uint32_t) *memaddr
+					| (uint32_t) *(memaddr+1) << 8
+					| (uint32_t) *(memaddr+2) << 16
+					| (uint32_t) *(memaddr+3) << 24;
 	uint32_t ins = *( (uint32_t *)(mstate_p->memory + mstate_p->pc) ); 
 	mstate_p->pc += 4;
 	return ins;
