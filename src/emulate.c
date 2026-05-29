@@ -75,14 +75,14 @@ static uint32_t fetch(mState *mState_tp) {
 }
 
 // Decode and execute stage - skeleton
-static void decode_execute(mState *mState_tp) {
+static void decode_execute(uint32_t ins, mState *mState_tp) {
 	uint32_t op0 = (ins >> 25) & 0xF; //get bits 28-25
 	
 	if ((op0 & 0xE) == 0x8) { // 100x & 1110
-		//Imm
+		dpi_imm(ins, mState_tp);
 	} 
 	else if ((op0 & 0x7) == 0x5) { // x101 & 0111 
-		//Reg
+		dpi_reg(ins, mState_tp);
 	} 
 	else if ((op0 & 0xB) == 0x8) { // 1x00 & 1011
 		//Load/store
