@@ -1,0 +1,1 @@
+extern int branch(uint32_t instruction, mstate_t *state);

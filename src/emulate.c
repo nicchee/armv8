@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "emulate.h"
+#include "branch.h"
 
 // Data Processing Instruction Immediate + Register
 // Position of each instruction part
