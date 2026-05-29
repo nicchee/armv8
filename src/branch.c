@@ -11,13 +11,13 @@
 // Type of Branches
 
 // Mask
-#define MASKUNCONDOP 0xfa000000
-#define MASKREGOP    0x11111a1f
-#define MASKCONDOP   0x1100001f
+#define MASKUNCONDOP 0xfc000000
+#define MASKREGOP    0xfffffc1f
+#define MASKCONDOP   0xff000000
 
 // Bit code
-#define UNCONDOP  0x18000000 
-#define REGOP     0xb61f0000
+#define UNCONDOP  0x14000000 
+#define REGOP     0xd61f0000
 #define CONDOP    0x54000000
 
 // Operand position
@@ -48,7 +48,6 @@ static int check_cond(int cond, pstate_t pstate);
 // public 
 
 void branch(uint32_t instruction, mstate_t *state){
-    int64_t offset = 0;
     if ((instruction & MASKUNCONDOP) == UNCONDOP) {
         int32_t simm26 = (instruction >> SHIFT_SIMM26) & MASK(SIMM26_SIZE);
         state->pc += (int64_t)(simm26) * INSTR_SIZE; // PC = PC + simm26
