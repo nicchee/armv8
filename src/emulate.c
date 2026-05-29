@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "emulate.h"
+#include "branch.h"
 #include "dpi.h"
 #include "single_data_transfer.h"
 
