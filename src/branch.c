@@ -6,7 +6,6 @@
 
 // Move this to mstate in the very near future
 #define INSTR_SIZE 4 
-#define MASK(x) ((1<<(x)) - 1)
 
 // Type of Branches
 
