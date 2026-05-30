@@ -36,16 +36,29 @@ int main(int argc, char **argv) {
 	mstate_t mState;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
-	free_state(&mState); // move to after the cycle?
 	while (true) {
 		uint32_t ins = fetch(&mState);
 		if (ins == STOP) {
-			//output(&mState);
+			if (argc == 2) {
+				print(&mState, stdout);
+			}
+			if (argc == 3) {
+				FILE *out = fopen(argv[2], "w");
+				if ( out == NULL ) {
+					fprintf( stderr, "Cant create .out file\n");
+				}
+				print(&mState, out);
+				if (ferror(out)) {
+					fprintf (stderr, "Error occured when writing to .out file\n");
+				}
+				fclose(out);
+			}
 			break;
 		} else {
 			decode_execute(ins, &mState);
 		}
 	}
+	free_state(&mState);
 	return EXIT_SUCCESS;
 }
 
