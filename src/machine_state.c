@@ -15,7 +15,7 @@ void print(mstate_t *state, FILE *fp) {
 	for (int i = 0; i < 31; i++) {
 		fprintf(fp, "X%02d = %016lx\n", i, state->regs[i]);
 	}
-	fprintf(fp, "\nPC = %lu\n", state->pc);
+	fprintf(fp, "PC = %016lx\n", state->pc);
 	fprintf(fp, "\nPSTATE : ");
 	if (state->ps.N == true) {
 		fprintf(fp, "N");
