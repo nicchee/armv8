@@ -30,7 +30,7 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
-		fprintf(stderr, "There must be 1 or 2 arguments passed to %s", argv[0]);
+		fprintf(stderr, "There must be 1 or 2 arguments passed to %s\n", argv[0]);
 		exit(EXIT_FAILURE);
 	} 
 	mstate_t mState;
@@ -84,14 +84,14 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 static void bin_file_load(uint8_t *memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
-		fprintf(stderr, "Can't open input binary file");
+		fprintf(stderr, "Can't open input binary file\n");
 		exit(EXIT_FAILURE);
 	}
 	fseek(in, 0, SEEK_END);
 	int fileSize = ftell(in);
 	rewind(in);
 	if (fileSize > MEMSIZE) {
-		fprintf(stderr, "Bin file too big");
+		fprintf(stderr, "Bin file too big\n");
 		fclose(in);
 		exit(EXIT_FAILURE);
 	}
