@@ -15,7 +15,7 @@ void print(mstate_t *state, FILE *fp) {
 	for (int i = 0; i < 31; i++) {
 		fprintf(fp, "X%02d = %016lx\n", i, state->regs[i]);
 	}
-	fprintf(fp, "\nPC = %lu\n", state->pc);
+	fprintf(fp, "PC = %016lx\n", state->pc);
 	fprintf(fp, "\nPSTATE : ");
 	if (state->ps.N == true) {
 		fprintf(fp, "N");
@@ -41,8 +41,9 @@ void print(mstate_t *state, FILE *fp) {
 	for (uint64_t addr = 0; addr < MEMSIZE; addr += 4) {
 		uint32_t result = read_memory(state, addr, 4);
 		if (state->memory[addr] != 0) {
-			fprintf(fp, "0x%08lx: 0x%08x\n", addr, result);
+			fprintf(fp, "0x%08lx: %08x\n", addr, result);
 		}
+		fprintf(fp, "0x%016lx : %016u\n", state->pc, STOP);
 	}
 }
 

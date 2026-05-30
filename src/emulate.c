@@ -23,8 +23,6 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 #define DPI_REG 5
 #define LOADSTORE 4
 #define BRANCH 10
-
-#define STOP 0x8a000000
 // End of Instruction Macros
 
 
