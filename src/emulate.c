@@ -43,7 +43,15 @@ int main(int argc, char **argv) {
 				print(&mState, stdout);
 			}
 			if (argc == 3) {
-				print(&mState, argv[2]);
+				FILE *out = fopen(argv[2], "w");
+				if ( out == NULL ) {
+					fprintf( stderr, "Cant create .out file\n");
+				}
+				print(&mState, out);
+				if (ferror(out)) {
+					fprintf (stderr, "Error occured when writing to .out file\n");
+				}
+				fclose(out);
 			}
 			break;
 		} else {
