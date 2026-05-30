@@ -16,7 +16,7 @@ void print(mstate_t *state, FILE *fp) {
 		fprintf(fp, "X%02d = %016lx\n", i, state->regs[i]);
 	}
 	fprintf(fp, "PC = %016lx\n", state->pc);
-	fprintf(fp, "\nPSTATE : ");
+	fprintf(fp, "PSTATE : ");
 	if (state->ps.N == true) {
 		fprintf(fp, "N");
 	} else {
@@ -44,7 +44,7 @@ void print(mstate_t *state, FILE *fp) {
 			fprintf(fp, "0x%08lx: %08x\n", addr, result);
 		}
 	}
-	fprintf(fp, "0x%016lx : %016u\n", state->pc, STOP);
+	fprintf(fp, "0x%08lx : %08x\n", state->pc, STOP);
 }
 
 void init(mstate_t *mstate_p) {
