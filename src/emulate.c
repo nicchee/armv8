@@ -58,9 +58,9 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
 		dpi_reg(ins, mstate_p);
 	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
-		// load store
+		single_data_transfer(ins, mstate_p);
 	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
-		// branch remember to dec pc by 4 before jmp by offset     
+		branch(ins , mstate_p)
 	} else {
 		exit (EXIT_FAILURE);
 	}
