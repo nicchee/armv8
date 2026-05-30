@@ -90,6 +90,7 @@ void dpi_imm(uint32_t instruction, mstate_t *state) {
 		fprintf(stderr, "Error: invalid opi.\n");
 		exit(EXIT_FAILURE); // failed
 	}
+	pc_inc(state);
 }
 
 /* helper function for dpi imm and dpi reg
@@ -125,7 +126,6 @@ static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_ind
 		}
 		state->regs[rd_index] = result;
 	}
-	return;
 }
 
 /* return dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index);
@@ -182,6 +182,7 @@ void dpi_reg(uint32_t instruction, mstate_t *state) {
 		fprintf(stderr, "Error: invalid OpGroup.\n");
 		exit(EXIT_FAILURE); // opgroup UNKNOWN
 	}
+	pc_inc(state);
 }
 
 /*

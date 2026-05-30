@@ -83,3 +83,11 @@ uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
   }
   return value;
 }
+
+/**
+ * 	pc_inc(state);
+ * 		PC = PC + 4
+ */
+void pc_inc(mstate_t *state) {
+	state->pc += INSTR_SIZE;
+}

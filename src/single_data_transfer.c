@@ -135,6 +135,7 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
         read_memory(state, addr, 4);
       }
   }
+  pc_inc(state);
   return;
 }
 
