@@ -60,7 +60,7 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
 		single_data_transfer(ins, mstate_p);
 	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
-		branch(ins , mstate_p)
+		branch(ins , mstate_p);
 	} else {
 		exit (EXIT_FAILURE);
 	}

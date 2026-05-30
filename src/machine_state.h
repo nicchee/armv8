@@ -33,5 +33,6 @@ extern void print(mstate_t *state, FILE *fp);
 extern void init(mstate_t *mstate_p);
 extern void free_state(mstate_t *mstate_p);
 extern uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes);
+extern void pc_inc(mstate_t *state);
 
 #endif
