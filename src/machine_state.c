@@ -43,7 +43,7 @@ void print(mstate_t *state, FILE *fp) {
 		if (state->memory[addr] != 0) {
 			fprintf(fp, "0x%08lx: %08x\n", addr, result);
 		}
-		fprintf(fp, "0x%016lx : %016lx\n", state->pc, STOP);
+		fprintf(fp, "0x%016lx : %016u\n", state->pc, STOP);
 	}
 }
 
