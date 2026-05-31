@@ -144,10 +144,10 @@ static void dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc,
 		case 0: //movn
 			state->regs[rd_index] = (sf == 1)? ~imm16: ~((uint32_t)imm16);
 			break;
-		case 2: 
+		case 2: //movz 
 			state->regs[rd_index] = imm16;
 			break;
-		case 3: 
+		case 3: //movk
 			rd_val = state->regs[rd_index];
 			rd_val = rd_val & ~(MASK(16) << (hw * 16));
 			rd_val = rd_val | imm16;
@@ -157,7 +157,6 @@ static void dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc,
 			fprintf(stderr, "Error: invalid opc.\n");
 			exit(EXIT_FAILURE);
 	} 
-	return;
 }
 
 /*
@@ -209,29 +208,29 @@ static OpGroup get_op_group(int m, uint32_t opr) {
  */
 static void dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf, int opc, int rd_index, int rn_index, int rm_index, OpGroup opgroup) {
 	int shift = (instruction >> SHIFT_SHIFT) & MASK(2);
-	//int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
+	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
 	if (rm_index == REG32) { rm_val = 0; } // read ZR
 	uint64_t op2 = 0;
 	uint64_t result = 0;
 	switch (shift) {
 		case LSL:
-			result = rm_val << shift;
+			result = rm_val << operand;
 			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case LSR:
-			result = rm_val >> shift;
+			result = rm_val >> operand;
 			op2 = (sf == 1)? result : (uint32_t)result;
 			break;
 		case ASR:
-			op2 = (sf == 1)? (((int64_t)rm_val) >> shift) : (((int32_t)rm_val) >> shift);
+			op2 = (sf == 1)? (((int64_t)rm_val) >> operand) : (((int32_t)rm_val) >> operand);
 			break;
 		case ROR:
 			if (opgroup != BIT_LOGIC) {
 				fprintf(stderr, "Error: cannot do rotate right for arithmetic instruction.\n");
 				exit(EXIT_FAILURE); // invalid, no ror for arithmetic
 			}
-			op2 = (sf == 1)? (rm_val >> shift) | (rm_val << (64 - shift)) : (((uint32_t)rm_val) >> shift) | (((uint32_t)rm_val) << (32 - shift));
+			op2 = (sf == 1)? (rm_val >> operand) | (rm_val << (64 - operand)) : (((uint32_t)rm_val) >> operand) | (((uint32_t)rm_val) << (32 - operand));
 			break; 
 		default:
 			fprintf(stderr, "Error: invalid shift.\n");
@@ -297,7 +296,6 @@ static void dpi_reg_bitlogic(uint32_t instruction, mstate_t *state, int sf, int 
 	if (rd_index == REG32) { return; } // write to ZR
 	if (sf == 0) { result = (uint32_t)result; }
 	state->regs[rd_index] = result;
-	return;
 }
 
 /*
@@ -319,7 +317,6 @@ static void dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc,
 	} else { // x == 1, msub
 		state->regs[rd_index] = ra_val - (rn_val * rm_val);
 	}
-	return;
 }
 
 
