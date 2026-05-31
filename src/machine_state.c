@@ -63,14 +63,24 @@ void free_state(mstate_t *mstate_p) {
 
 /*
   * @function: check if address is Out-of-Bounds
-  *	check if its 4 byte aligned
 */
 void check_addr(uint64_t addr, int num_bytes) {
 	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
 		fprintf(stderr, "Memory address out of bound!\n");
 		exit(EXIT_FAILURE);
 	}
-	if(addr % 4) { // check if memory address is 4-byte aligned
+}
+
+/*
+  * @function: check if instruction address is Out-of-Bounds
+  *	check if its 4 byte aligned
+*/
+void check_instr_addr(uint64_t addr) {
+	if( addr + 4 > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+		fprintf(stderr, "Memory address out of bound!\n");
+		exit(EXIT_FAILURE);
+	}
+	if(addr % 4) { // check if "instruction" memory address is 4-byte aligned
 		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
 		exit(EXIT_FAILURE);
 	}
