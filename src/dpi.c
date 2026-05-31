@@ -149,7 +149,7 @@ static void dpi_imm_wide(uint32_t instruction, mstate_t *state, int sf, int opc,
 			break;
 		case 3: //movk
 			rd_val = state->regs[rd_index];
-			rd_val = rd_val & ~(MASK(16) << (hw * 16));
+			rd_val = rd_val & ~((uint64_t)MASK(16) << (hw * 16));
 			rd_val = rd_val | imm16;
 			state->regs[rd_index] = (sf == 1)? rd_val : (uint32_t)rd_val;
 			break;
