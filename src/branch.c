@@ -47,12 +47,19 @@ static int check_cond(int cond, pstate_t pstate);
 void branch(uint32_t instruction, mstate_t *state){
     if ((instruction & MASKUNCONDOP) == UNCONDOP) {
         int32_t simm26 = (instruction >> SHIFT_SIMM26) & MASK(SIMM26_SIZE);
+	simm26 = (simm26 << 6) >> 6; // shift left by 6 to push bit 25 to bit 31, then asr by 6 to copy bit 31 to upper slots
         state->pc += (int64_t)(simm26) * INSTR_SIZE; // PC = PC + simm26
     } else if ((instruction & MASKREGOP) == REGOP) {
-        state->pc = state->regs[(instruction >> SHIFT_XN) & MASK(REG_SIZE)]; // PC = Xn
+	int xn = (instruction >> SHIFT_XN) & MASK(REG_SIZE);
+	if (xn == REG32) { // encodes XZR
+		pc_inc(state);
+		return;
+	} 
+        state->pc = state->regs[xn]; // PC = Xn
     } else if ((instruction & MASKCONDOP) == CONDOP) {
         int cond = (instruction >> SHIFT_COND) & MASK(COND_SIZE);
         int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(SIMM19_SIZE);
+	simm19 = (simm19 << 13) >> 13; // shift left by 13 to push bit 18 to bit 31, then asr by 6 to copy bit 31 to upper slots
         int branch_cond = check_cond(cond, state->ps);
         switch (branch_cond) {
             case -1: 
