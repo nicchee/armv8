@@ -115,7 +115,8 @@ static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_ind
 		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
 		const bool op2_N = ((op2 >> msb) & 1) == 1; // check if op2 is negative
 		if (opc == 1) { // addition, opc == 1
-			state->ps.C = result < op2;
+			uint64_t op2_masked = (sf == 0)? (uint32_t)op2 : op2;
+			state->ps.C = result < op2_masked;
 			state->ps.V = (!result_N && rn_N && op2_N) || (result_N && !rn_N && !op2_N);
 		} else { // subtraction, opc == 3
 			state->ps.C = rn_val >= op2;
