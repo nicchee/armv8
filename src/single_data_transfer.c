@@ -140,7 +140,7 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
       } else {
         state->regs[rt] = read_memory(state, addr, 4);
       }
-  }
+  }J
   pc_inc(state);
   return;
 }
