@@ -51,14 +51,15 @@ void branch(uint32_t instruction, mstate_t *state){
     } else if ((instruction & MASKREGOP) == REGOP) {
         state->pc = state->regs[(instruction >> SHIFT_XN) & MASK(REG_SIZE)]; // PC = Xn
     } else if ((instruction & MASKCONDOP) == CONDOP) {
-        int cond = (instruction >> SHIFT_SIMM26) & MASK(COND_SIZE);
+        int cond = (instruction >> SHIFT_COND) & MASK(COND_SIZE);
         int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(SIMM19_SIZE);
         int branch_cond = check_cond(cond, state->ps);
         switch (branch_cond) {
             case -1: 
                 fprintf(stderr, "Error: Instruction not recognised for any branch operation.\n");
                 exit(EXIT_FAILURE); // not recognised branch operation
-            case 0: 
+            case 0:
+		pc_inc(state); 
                 return; // does not satisfies cond
             case 1: 
                 state->pc += (int64_t)(simm19) * INSTR_SIZE; // PC = PC + simm19
