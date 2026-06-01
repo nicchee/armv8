@@ -99,6 +99,7 @@ void dpi_imm(uint32_t instruction, mstate_t *state) {
  */
 static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_index, uint64_t op2) {
 	if (rn_index == REG32) { return; } // encodes SP
+	if (sf == 0) { op2 = (uint32_t)op2; }
 	uint64_t rn_val = (sf == 1)? state->regs[rn_index] : (uint32_t)(state->regs[rn_index]); 
 	uint64_t result = (opc <= 1)? rn_val + op2 : rn_val - op2;
 	if (sf == 0) { result = (uint32_t)result; }
@@ -115,8 +116,7 @@ static void dpi_arith(mstate_t *state, int sf, int opc, int rd_index, int rn_ind
 		const bool rn_N = ((rn_val >> msb) & 1) == 1; // check if rn_val is negative
 		const bool op2_N = ((op2 >> msb) & 1) == 1; // check if op2 is negative
 		if (opc == 1) { // addition, opc == 1
-			uint64_t op2_masked = (sf == 0)? (uint32_t)op2 : op2;
-			state->ps.C = result < op2_masked;
+			state->ps.C = result < op2;
 			state->ps.V = (!result_N && rn_N && op2_N) || (result_N && !rn_N && !op2_N);
 		} else { // subtraction, opc == 3
 			state->ps.C = rn_val >= op2;
@@ -212,16 +212,14 @@ static void dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, int sf
 	int operand = (instruction >> SHIFT_OPERAND) & MASK(6); 
 	uint64_t rm_val = state->regs[rm_index];
 	if (rm_index == REG32) { rm_val = 0; } // read ZR
+	if (sf == 0) { rm_val = (uint32_t)rm_val; }
 	uint64_t op2 = 0;
-	uint64_t result = 0;
 	switch (shift) {
 		case LSL:
-			result = rm_val << operand;
-			op2 = (sf == 1)? result : (uint32_t)result;
+			op2 = rm_val << operand;
 			break;
 		case LSR:
-			result = rm_val >> operand;
-			op2 = (sf == 1)? result : (uint32_t)result;
+			op2 = rm_val >> operand;
 			break;
 		case ASR:
 			op2 = (sf == 1)? (((int64_t)rm_val) >> operand) : (((int32_t)rm_val) >> operand);
@@ -313,11 +311,14 @@ static void dpi_reg_mult(uint64_t instruction, mstate_t *state, int sf, int opc,
 	if (rn_index == REG32) { rn_val = 0; } // read ZR
 	uint64_t rm_val = (sf == 1)? state->regs[rm_index] : (uint32_t)(state->regs[rm_index]);
 	if (rm_index == REG32) { rm_val = 0; } // read ZR
+	uint64_t result = 0;
 	if (x == 0) { // madd
-		state->regs[rd_index] = ra_val + (rn_val * rm_val); 
+		result = ra_val + (rn_val * rm_val); 
 	} else { // x == 1, msub
-		state->regs[rd_index] = ra_val - (rn_val * rm_val);
+		result = ra_val - (rn_val * rm_val);
 	}
+	if (sf == 0) { result = (uint32_t)result; }
+	state->regs[rd_index] = result;	
 }
 
 
