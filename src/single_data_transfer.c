@@ -12,7 +12,7 @@
 #define SHIFT_U 24
 #define SHIFT_SF 30
 #define SHIFT_OP 31
-#define SHIFT_XM 5
+#define SHIFT_XM 6
 
 // Width of each instcution part for Single Data Transfer & Load Literal
 #define WIDTH_RT 5
