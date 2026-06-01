@@ -32,15 +32,31 @@ TokenisedLine tokenise(char *line) {
 	result.opcode = strdup(op);
 
 	// operands
-	char *operand = strtok_r(NULL, " [],", &saveptr);
-	while (operand != NULL && result.num_operands < MAX_OPERANDS) {
-		if (strlen(operand) > 0) { // check that string is not empty
-			result.operands[result.num_operands] = strdup(operand);
-			result.num_operands++;
+	if (saveptr == NULL) { return result; }
+	char *start = saveptr;
+	int depth = 0;
+	while (*start == ' ') { start++; }
+	for (char *p = start;;p++) {
+		if (result.num_operands >= MAX_OPERANDS) { break; }
+		if (*p == '[') { depth++; }
+		if (*p == ']') { depth--; }
+		if (*p == ',' && depth == 0) {
+			*p = '\0';
+			if (strlen(start) > 0) {
+				result.operands[result.num_operands] = strdup(start);
+				result.num_operands++;
+			}
+			start = p + 1;
+			while (*start == ' ') { start++; }
+		} else if (*p == '\0') {
+			if (strlen(start) > 0) {
+				result.operands[result.num_operands] = strdup(start);
+				result.num_operands++;
+			}
+			break;
 		}
-		operand = strtok_r(NULL, " [],", &saveptr);
 	}
-
+	
 	return result;
 }
 
@@ -48,3 +64,4 @@ static TokenisedLine init_tokenised_line( void ) {
 	TokenisedLine result = { NULL, NULL, { NULL, NULL, NULL, NULL }, 0 };
 	return result;
 }
+
