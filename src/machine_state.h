@@ -29,8 +29,8 @@ typedef struct {
 	uint8_t *memory;
 } mstate_t;
 
-extern void check_addr(uint64_t addr, int num_bytes);
-extern void check_instr_addr(uint64_t addr);
+extern bool check_addr(uint64_t addr, int num_bytes);
+extern bool check_instr_addr(uint64_t addr);
 extern void print(mstate_t *state, FILE *fp);
 extern void init(mstate_t *mstate_p);
 extern void free_state(mstate_t *mstate_p);
