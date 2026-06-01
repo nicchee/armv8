@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-// Decode and execute stage - skeleton
+// Decode and execute stage
 static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	uint8_t op0 = ins >> SHIFT_OP0;
 
@@ -100,7 +100,9 @@ static void bin_file_load(uint8_t *memory, const char *fileName){
 
 // Fetch stage
 static uint32_t fetch(mstate_t *mstate_p) {
-	check_addr(mstate_p->pc, 4);
+	if (check_instr_addr(mstate_p->pc) == false){
+		return STOP;
+	}
 
 	uint8_t *instraddr = (mstate_p->memory + mstate_p->pc);
 

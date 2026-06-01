@@ -40,11 +40,10 @@ void print(mstate_t *state, FILE *fp) {
 	fprintf(fp, "Non-zero memory:\n");
 	for (uint64_t addr = 0; addr < MEMSIZE; addr += 4) {
 		uint32_t result = read_memory(state, addr, 4);
-		if (state->memory[addr] != 0) {
+		if (result != 0) {
 			fprintf(fp, "0x%08lx: %08x\n", addr, result);
 		}
 	}
-	fprintf(fp, "0x%08lx : %08x\n", state->pc, STOP);
 }
 
 void init(mstate_t *mstate_p) {
@@ -63,17 +62,29 @@ void free_state(mstate_t *mstate_p) {
 
 /*
   * @function: check if address is Out-of-Bounds
-  *	check if its 4 byte aligned
 */
-void check_addr(uint64_t addr, int num_bytes) {
+bool check_addr(uint64_t addr, int num_bytes) {
 	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
 		fprintf(stderr, "Memory address out of bound!\n");
-		exit(EXIT_FAILURE);
+		return false;
 	}
-	if(addr % 4) { // check if memory address is 4-byte aligned
+	return true;
+}
+
+/*
+  * @function: check if instruction address is Out-of-Bounds
+  *	check if its 4 byte aligned
+*/
+bool check_instr_addr(uint64_t addr) {
+	if( addr + 4 > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+		fprintf(stderr, "Memory address out of bound!\n");
+		return false;
+	}
+	if(addr % 4) { // check if "instruction" memory address is 4-byte aligned
 		fprintf(stderr, "Instruction Address is not aligned on a 4 byte boundary!\n");
-		exit(EXIT_FAILURE);
+		return false;
 	}
+	return true;
 }
 
 uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
