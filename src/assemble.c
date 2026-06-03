@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-
 #include "symtable.h"
 
 extern void bin_file_write(const char* fileName, uint32_t *bin);

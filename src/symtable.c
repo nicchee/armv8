@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 //Create symbol table, return pointer
 symtable_t* init_table(void) {
@@ -58,7 +57,7 @@ bool insert_symkv(symtable_t* table, sym_t* s, uint32_t address) {
 }
 
 //Lookup symbol in table, return address
-uint32_t get_addr(symtable_t *table, sym_t s) {
+uint32_t get_addr(symtable_t* table, sym_t* s) {
 	int currIndex = table->count;
 	for (int i = 0; i < table->count; i++) {
 		if (strcmp((const char*) s, table->entries[currIndex].symbol) == 0) {
