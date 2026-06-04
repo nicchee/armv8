@@ -1,5 +1,10 @@
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
+
 #include <stdint.h>
 #include <stdbool.h>
+
+#endif 
 
 #define MAX_SYM_LEN 64
 #define MAX_SYMTABLE_SIZE 1024
