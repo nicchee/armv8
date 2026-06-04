@@ -16,16 +16,18 @@ typedef struct {
 	uint32_t addr;
 } symkv_t;
 
-typedef struct {
+struct symtable {
 	symkv_t entries[MAX_SYMTABLE_SIZE];
 	int count;
-} symtable_t;
+};
+
+typedef struct symtable *symtable_t;
 
 // Prototypes for all symtable functions
-extern symtable_t* init_table(void);
-extern void free_table(symtable_t *table);
-extern bool insert_symkv(symtable_t *table, sym_t *s, uint32_t address);
-extern uint32_t get_addr(symtable_t *table, sym_t *s);
+extern symtable_t init_table(void);
+extern void free_table(symtable_t table);
+extern bool insert_symkv(symtable_t table, sym_t *s, uint32_t address);
+extern uint32_t get_addr(symtable_t table, sym_t *s);
 
 
 
