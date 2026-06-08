@@ -1,5 +1,5 @@
 #include "symtable.h"
-#include "fileio.h"
+//#include "fileio.h"
 
 #include <stdio.h>
 #include <string.h>

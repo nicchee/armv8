@@ -7,7 +7,7 @@
 #endif 
 
 #define MAX_SYM_LEN 64
-#define MAX_SYMTABLE_SIZE 1024
+#define INITIAL_MAX_SYMTABLE_SIZE 256
 
 typedef char sym_t[MAX_SYM_LEN];
 
@@ -17,17 +17,18 @@ typedef struct {
 } symkv_t;
 
 struct symtable {
-	symkv_t entries[MAX_SYMTABLE_SIZE];
+	symkv_t *entries;
 	int count;
+	int cap;
 };
 
-typedef struct symtable *symtable_t;
+typedef struct symtable *symtable;
 
 // Prototypes for all symtable functions
-extern symtable_t init_table(void);
-extern void free_table(symtable_t table);
-extern bool insert_symkv(symtable_t table, sym_t *s, uint32_t address);
-extern uint32_t get_addr(symtable_t table, sym_t *s);
+extern symtable init_table(void);
+extern void free_table(symtable table);
+extern bool insert_symkv(symtable table, sym_t s, uint32_t address);
+extern uint32_t get_addr(symtable table, sym_t s);
 
 
 
