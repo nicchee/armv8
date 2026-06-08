@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 //Flags for Single Data Transfer Address Mode and Branch Type
-typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_address_mode_t; 
+typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_mode_t; 
 typedef enum {UNCOND, REG, COND} branch_type_t;
 
 // Struct for instruction_t
@@ -33,13 +33,13 @@ typedef struct {
             uint8_t rd, rn, rm; 
 	    	uint32_t sf, opc, M, opr;
 	    	union {
-			struct {
-				uint32_t N, shift, imm6;
-			} arith_logic;
-			struct {
-				uint32_t x;
-				uint8_t ra;
-			} mul;
+				struct {
+					uint32_t N, shift, imm6;
+				} arith_logic;
+				struct {
+					uint32_t x;
+					uint8_t ra;
+				} mul;
 	    	};
         } dp_reg;
 
@@ -47,27 +47,27 @@ typedef struct {
         struct {
             uint8_t rt; 
 	    	uint32_t sf;
-	    	sdt_addr_mode_t mode;
+	    	sdt_mode_t mode;
 
 	    // Either Single Data Transfer or Load Literal
 			union {
 			// Single Data Transfer: mode == 0 or 1 or 2
 				struct {
-				uint8_t xn;
-				uint32_t L;
-				union {
-					struct {
-						uint32_t U, imm12;
-					} unsigned_offset; // mode = 0
-					struct {
-						uint32_t I;
-						int32_t simm9;
-					} pre_post_index; // mode == 1
-				uint8_t xm; // reg_offset: mode == 2
-				};
-			} sdt;
-			// Load Literal: mode == 3
-			int32_t simm19; 
+					uint8_t xn;
+					uint32_t L;
+					union {
+						struct {
+							uint32_t U, imm12;
+						} unsigned_offset; // mode = 0
+						struct {
+							uint32_t I;
+							int32_t simm9;
+						} pre_post_index; // mode == 1
+					uint8_t xm; // reg_offset: mode == 2
+					};
+				} sdt;
+				// Load Literal: mode == 3
+				int32_t simm19; 
 	    	};
         } load_store;
 
