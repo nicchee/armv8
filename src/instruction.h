@@ -8,7 +8,7 @@ typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_address
 typedef enum {UNCOND, REG, COND} branch_type_t;
 
 // Struct for instruction_t
-struct instruction_t {
+typedef struct {
 
     uint32_t op0;  // defines operation: DP_IMM, DP_REG, LOAD_STORE, BRANCH
 
@@ -19,7 +19,8 @@ struct instruction_t {
             uint32_t sf, opc, opi;
 	    uint8_t rd; 
 	    union {
-		struct {uint8_t rn
+		struct {
+			uint8_t rn;
 			uint32_t sh, imm12;} arith;
 	    	struct {uint32_t hw, imm16;} wide;
 	    };
@@ -28,10 +29,10 @@ struct instruction_t {
         // DP Reg
         struct {
             uint8_t rd, rn, rm; 
-	    uint32_t sf, opc, M, opr;
-	    union {
-		struct {uint32_t N, shift, imm6;} arith_logic;
-		struct {uint32_t x;
+	    	uint32_t sf, opc, M, opr;
+	    	union {
+			struct {uint32_t N, shift, imm6;} arith_logic;
+			struct {uint32_t x;
 			uint8_t ra;} mul;
 	    };
         } dp_reg;
@@ -39,8 +40,8 @@ struct instruction_t {
 	// Single Data Transfer
         struct {
             uint8_t rt; 
-	    uint32_t sf;
-	    sdt_addr_mode_t mode;
+	    	uint32_t sf;
+	    	sdt_addr_mode_t mode;
 
 	    // Either Single Data Transfer or Load Literal
 	    union {
@@ -72,9 +73,6 @@ struct instruction_t {
 	    };
         } branch;
     };
-
-} ;
-
-typedef struct instruction_t *instruction_t;
+} instruction_t;
 
 #endif
