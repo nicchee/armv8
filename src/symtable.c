@@ -7,11 +7,11 @@
 //Create symbol table, return pointer
 symtable_t init_table(void) {
 	symtable_t table = malloc(sizeof(struct symtable));
-	if (table != NULL) {
-		table->count = 0;
-	} else {
-		fprintf(stderr, "Symbol table malloc failed");
+	if (table == NULL) { 
+		fprintf(stderr, "Symbol table malloc failed\n");
+		exit(1);
 	}
+	table->count = 0;
 	return table;
 }
 
@@ -26,19 +26,19 @@ void free_table(symtable_t table) {
 bool insert_symkv(symtable_t table, sym_t* s, uint32_t address) {
 	//Check if pointers are NULL
 	if (table == NULL || s == NULL) {
-		fprintf(stderr, "Null pointer");
+		fprintf(stderr, "Null pointer\n");
 		return false;
 	}
 	//Check if sym table is full
 	if (table->count >= MAX_SYMTABLE_SIZE) {
-		fprintf(stderr, "Symbol table is full");
+		fprintf(stderr, "Symbol table is full\n");
 		return false;
 	}	
 
 	//Check if symbol alr in table - linear search
 	for (int i = 0; i < table->count; i++) {
 		if (strcmp((const char*) s, table->entries[i].symbol) == 0) {
-			fprintf(stderr, "Duplicate symbol definition");
+			fprintf(stderr, "Duplicate symbol definition\n");
 			return false;
 		}
 	}
@@ -46,7 +46,7 @@ bool insert_symkv(symtable_t table, sym_t* s, uint32_t address) {
 	int currIndex = table->count;
 	//Prevent buffer overrun, check if s is too long for buffer
 	if (strlen(*s) > (MAX_SYM_LEN - 1) ) {
-		fprintf(stderr, "Symbol too long to fit in buffer");
+		fprintf(stderr, "Symbol too long to fit in buffer\n");
 		return false;
 	}
 	// s and its null terminator will fit in buffer so can strncpy safely and return
@@ -60,8 +60,8 @@ bool insert_symkv(symtable_t table, sym_t* s, uint32_t address) {
 uint32_t get_addr(symtable_t table, sym_t* s) {
 	int currIndex = table->count;
 	for (int i = 0; i < table->count; i++) {
-		if (strcmp((const char*) s, table->entries[currIndex].symbol) == 0) {
-			return table->entries[currIndex].addr;
+		if (strcmp((const char*) s, table->entries[i].symbol) == 0) {
+			return table->entries[i].addr;
 		}
 	}
 	fprintf(stderr, "Couldn't find symbol in table");
