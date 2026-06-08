@@ -7,7 +7,7 @@
 #include "branch.h"
 #include "dpi.h"
 #include "single_data_transfer.h"
-
+#include "instruction.h"
 
 // Instruction
 static void bin_file_load(uint8_t *memory, const char *fileName);
@@ -23,43 +23,55 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 #define DPI_REG 5
 #define LOADSTORE 4
 #define BRANCH 10
-
-#define STOP 0x8a000000
 // End of Instruction Macros
 
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
-		fprintf(stderr, "There must be 1 or 2 arguments passed to %s", argv[0]);
+		fprintf(stderr, "There must be 1 or 2 arguments passed to %s\n", argv[0]);
 		exit(EXIT_FAILURE);
 	} 
 	mstate_t mState;
+	instruction_t instruction;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
-	free_state(&mState); // move to after the cycle?
 	while (true) {
 		uint32_t ins = fetch(&mState);
 		if (ins == STOP) {
-			//output(&mState);
+			if (argc == 2) {
+				print(&mState, stdout);
+			}
+			if (argc == 3) {
+				FILE *out = fopen(argv[2], "w");
+				if ( out == NULL ) {
+					fprintf( stderr, "Cant create .out file\n");
+				}
+				print(&mState, out);
+				if (ferror(out)) {
+					fprintf (stderr, "Error occured when writing to .out file\n");
+				}
+				fclose(out);
+			}
 			break;
 		} else {
 			decode_execute(ins, &mState);
 		}
 	}
+	free_state(&mState);
 	return EXIT_SUCCESS;
 }
 
 // Decode and execute stage - skeleton
-static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
-	uint8_t op0 = ins >> SHIFT_OP0;
+static void decode_execute(uint32_t ins, mstate_t *mstate_p, instruction_t *insp) {
+	insp->op0 = ins >> SHIFT_OP0;
 
-	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
+	if ((insp->op0 & MASK1110) == DPI_IMM) { // checks 100x
 		dpi_imm(ins, mstate_p);
-	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
+	} else if ((insp->op0 & MASK0111) == DPI_REG) { // checks x101 
 		dpi_reg(ins, mstate_p);
-	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
+	} else if ((insp->op0 & MASK0101) == LOADSTORE) { // checks x1x0
 		single_data_transfer(ins, mstate_p);
-	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
+	} else if ((insp->op0 & MASK1110) == BRANCH) { // checks 101x
 		branch(ins , mstate_p);
 	} else {
 		exit (EXIT_FAILURE);
@@ -71,14 +83,14 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 static void bin_file_load(uint8_t *memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
-		fprintf(stderr, "Can't open input binary file");
+		fprintf(stderr, "Can't open input binary file\n");
 		exit(EXIT_FAILURE);
 	}
 	fseek(in, 0, SEEK_END);
 	int fileSize = ftell(in);
 	rewind(in);
 	if (fileSize > MEMSIZE) {
-		fprintf(stderr, "Bin file too big");
+		fprintf(stderr, "Bin file too big\n");
 		fclose(in);
 		exit(EXIT_FAILURE);
 	}
