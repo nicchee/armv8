@@ -6,13 +6,6 @@ static TokenisedLine init_tokenised_line( void );
 
 TokenisedLine tokenise(char *line) {
 	TokenisedLine result = init_tokenised_line();
-	/*
-	// clean comments
-	char *commentptr = strstr(line, "//");
-	if (commentptr != NULL) {
-		*commentptr = '\0';
-	}
-	*/
 
 	// check for label
 	char *colonptr = strchr(line, ':');
@@ -36,7 +29,7 @@ TokenisedLine tokenise(char *line) {
 	char *start = saveptr;
 	int depth = 0;
 	while (*start == ' ') { start++; }
-	for (char *p = start;;p++) {
+	for (char *p = start; *p != '\n'; p++) {
 		if (result.num_operands >= MAX_OPERANDS) { break; }
 		if (*p == '[') { depth++; }
 		if (*p == ']') { depth--; }
