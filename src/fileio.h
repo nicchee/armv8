@@ -9,5 +9,5 @@
 
 extern void bin_file_write(const char* fileName, uint32_t *bin);
 extern void asm_file_read(const char* fileName);
-extern void ins_parse(char * line);
+extern void parse_ins(char * line);
 

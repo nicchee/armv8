@@ -22,8 +22,8 @@ op_t get_op_t (TokenisedLine tl){
 	if (strcmp(opcstr, "add") == 0) {
 		if(tl.num_operands == 3) {
 			if ( strcmp(tl.operands[0], HALT_OPERAND) == 0 && 
-			strcmp(t1.operands[1], HALT_OPERAND) == 0 &&
-			strcmp (t1.operands[2], HALT_OPERAND) == 0 ) {
+			strcmp(tl.operands[1], HALT_OPERAND) == 0 &&
+			strcmp (tl.operands[2], HALT_OPERAND) == 0 ) {
 				return HALT;
 			}
 		}
