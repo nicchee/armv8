@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+//op_t op = get_op_t (tl);
+//	returns op from tokenisedline
 op_t get_op_t (TokenisedLine tl){
 	char *opcstr = tl.opcode;
 	//Arithmetic
