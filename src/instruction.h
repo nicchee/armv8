@@ -4,16 +4,20 @@
 #include <stdint.h>
 
 //Flags for Single Data Transfer Address Mode and Branch Type
-typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_address_mode_t; 
-typedef enum {UNCOND, REG, COND} branch_type_t;
+typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_addr_mode_t; 
+typedef enum {UNCOND, REG, COND} branch_t;
 
 // Struct for instruction_t
 struct instruction_t {
 
-    uint32_t op0;  // defines operation: DP_IMM, DP_REG, LOAD_STORE, BRANCH
+    uint32_t op0;  // defines operation: DP_IMM, DP_REG, LOAD_STORE, BRANCH 
+		   // 0101 if HALT
 
     // only one of these structs will exist in memory at a time
     union {
+	//Halt
+	struct {uint32_t halt_val} halt;
+
         // DP Imm
         struct {
             uint32_t sf, opc, opi;
@@ -63,7 +67,7 @@ struct instruction_t {
 
         // Branches
         struct {
-            branch_type_t type;
+            branch_t type;
             union {
 	    	int32_t simm26; // uncond: type == 0
 		uint8_t xn;	// reg: type == 1
