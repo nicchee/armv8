@@ -1,4 +1,5 @@
 #include "fileio.h"
+#include "two_pass.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -26,19 +27,8 @@ void asm_file_read(const char* fileName) {
 		fprintf(stderr, "Can't open assembly file\n");
 		exit(1);
 	}
-
-	line_t line;
-	// if line len > MAX_LINE_LEN -1, likely to be syntactically wrong, ignore this line and don't send to parser
-	while ( fgets(line, sizeof(line), in) != NULL) {
-		if (*line == '\n') { continue; } //empty line
-		int len = strlen(line);
-		if (len > 0 && line[len - 1] != '\n' && !feof(in)) {
-			fprintf(stderr, "Line longer than max length of %d, not passed to parser\n", MAX_LINE_LEN-1);
-			fclose(in);
-			exit(EXIT_FAILURE);
-		}
-		parse_ins(line);
-	}
+	first_pass(in);
+	
 	fclose(in);
 }
 	
