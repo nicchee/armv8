@@ -5,11 +5,17 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 op_t get_op_t (TokenisedLine tl){
 	char *opcstr = tl.opcode;
 	//Arithmetic
-	if (strcmp(opcstr, "add") == 0) {
+	if (strcmp(opcstr, "add") == 0) return ADD;
+	else if (strcmp(opcstr, "adds") == 0) return ADDS;
+	else if (strcmp(opcstr, "sub") == 0) return SUB;
+	else if (strcmp(opcstr, "subs") == 0) return SUBS;
+	// Logical
+	else if (strcmp(opcstr, "and") == 0) {
 		if(tl.num_operands == 3) {
 			if ( strcmp(tl.operands[0], HALT_OPERAND) == 0 && 
 			strcmp(tl.operands[1], HALT_OPERAND) == 0 &&
@@ -17,14 +23,8 @@ op_t get_op_t (TokenisedLine tl){
 				return HALT;
 			}
 		}
-		return ADD;
+		return AND;
 	}
-	else if (strcmp(opcstr, "adds") == 0) return ADDS;
-	else if (strcmp(opcstr, "sub") == 0) return SUB;
-	else if (strcmp(opcstr, "subs") == 0) return SUBS;
-
-	// Logical
-	else if (strcmp(opcstr, "and") == 0) return AND;
 	else if (strcmp(opcstr, "ands") == 0) return ANDS;
 	else if (strcmp(opcstr, "bic") == 0) return BIC;
 	else if (strcmp(opcstr, "bics") == 0) return BICS;
@@ -43,9 +43,8 @@ op_t get_op_t (TokenisedLine tl){
 	else if (strcmp(opcstr, "msub") == 0) return MSUB;
 
 	// Branch
-	else if ((strcmp(opcstr, "b") == 0 || 
-		strcmp(opcstr, "br") == 0) ) return B;
-	else if (strcmp(opcstr, "b.cond") == 0) return BCOND;
+	else if ((strcmp(opcstr, "b") == 0 || strcmp(opcstr, "br") == 0) ) return B;
+	else if (strcmp(opcstr, "b.") == 0) return BCOND;
 
 	// Load/store
 	else if (strcmp(opcstr, "ldr") == 0) return LDR;
@@ -53,9 +52,22 @@ op_t get_op_t (TokenisedLine tl){
 
 	// .int directive 
 	else if (strcmp(opcstr, ".int") == 0) return INTDIR;
-
-	// Anything else must be Aliases	
-	else return ALIAS;
+	
+	// Any Aliases
+	// Replace the 'else' with explicit alias checks
+	else if (
+		strcmp(opcstr, "cmp") == 0 || strcmp(opcstr, "cmn") == 0 ||
+        strcmp(opcstr, "neg") == 0 || strcmp(opcstr, "negs") == 0 ||
+        strcmp(opcstr, "tst") == 0 || strcmp(opcstr, "mvn") == 0 ||
+        strcmp(opcstr, "mov") == 0 || strcmp(opcstr, "mul") == 0 ||
+        strcmp(opcstr, "mneg") == 0
+	) return ALIAS;
+	
+	// If it's not a known instruction AND not a known alias, it's a typo
+	else {
+    fprintf(stderr, "Syntax Error: Unknown instruction '%s'\n", opcstr);
+    exit(EXIT_FAILURE);
+	}
 }
 
 bool parse(char *line, uint32_t *addr, instruction_t ins) {
