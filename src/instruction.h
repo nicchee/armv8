@@ -7,7 +7,7 @@
 typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_mode_t; 
 typedef enum {UNCOND, REG, COND} branch_type_t;
 
-#define HALT 0x8a000000
+#define HALT_INS 0x8a000000
 #define HALT_OP0 0 //0000
 #define DPI_OP0 8 //100x
 #define DPR_OP0 5 //x101
@@ -21,14 +21,13 @@ struct instruction_t {
     // only one of these structs will exist in memory at a time
     union {
 	//Halt
-	struct {uint32_t halt_val;} halt;
+		struct {uint32_t halt_val;} halt;
 
-        // DP Imm
-        struct {
-            uint32_t sf, opc, opi;
-	    	uint8_t rd; 
-	    	union {
-
+		// DP Imm
+		struct {
+			uint32_t sf, opc, opi;
+			uint8_t rd; 
+			union {
 				struct {
 					uint8_t rn;
 					uint32_t sh, imm12;
@@ -36,12 +35,12 @@ struct instruction_t {
 				struct {
 					uint32_t hw, imm16;
 				} wide;
-	    	};
-        } dp_imm;
+			};
+		} dp_imm;
 
-        // DP Reg
-        struct {
-            uint8_t rd, rn, rm; 
+		// DP Reg
+		struct {
+			uint8_t rd, rn, rm; 
 			uint32_t sf, opc, M, opr;
 			union {
 				struct {
@@ -51,17 +50,18 @@ struct instruction_t {
 					uint32_t x;
 					uint8_t ra;
 				} mul;
-	    	};
-        } dp_reg;
-	// Single Data Transfer
-        struct {
-            uint8_t rt; 
+			};
+		} dp_reg;
+		
+		// Single Data Transfer
+		struct {
+			uint8_t rt; 
 			uint32_t sf;
-	    	sdt_mode_t mode;
+			sdt_mode_t mode;
 
-	    // Either Single Data Transfer or Load Literal
+			// Either Single Data Transfer or Load Literal
 			union {
-			// Single Data Transfer: mode == 0 or 1 or 2
+				// Single Data Transfer: mode == 0 or 1 or 2
 				struct {
 					uint8_t xn;
 					uint32_t L;
@@ -78,21 +78,21 @@ struct instruction_t {
 				} sdt;
 				// Load Literal: mode == 3
 				int32_t simm19; 
-	    	};
-        } load_store;
+			};
+		} load_store;
 
-        // Branches
-        struct {
-            branch_type_t type;
-            union {
-	    		int32_t simm26; // uncond: type == 0
+		// Branches
+		struct {
+			branch_type_t type;
+			union {
+				int32_t simm26; // uncond: type == 0
 				uint8_t xn;	// reg: type == 1
 				struct {
 					int32_t simm19; 
 					uint32_t cond;
 				} cond_t; // cond: type == 2
-	    	};
-        } branch;
+			};
+		} branch;
     };
 };
 
