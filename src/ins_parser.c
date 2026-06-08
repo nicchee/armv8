@@ -103,7 +103,7 @@ void parse(char *line, uint32_t *addr, instruction_t ins) {
 	
 	switch (get_op_t(tl)) {
 	case HALT:
-		ins->halt.halt_val = HALT;
+		ins->halt.halt_val = HALT_INS;
 		ins->op0 = HALT_OP0;
 		return true;
 

@@ -21,7 +21,9 @@ struct instruction_t {
     // only one of these structs will exist in memory at a time
     union {
 	//Halt
-		struct {uint32_t halt_val;} halt;
+		struct {
+			uint32_t halt_val;
+		} halt;
 
 		// DP Imm
 		struct {
