@@ -7,6 +7,13 @@
 typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_addr_mode_t; 
 typedef enum {UNCOND, REG, COND} branch_t;
 
+#define HALT 0x8a000000
+#define HALT_OP0 0 //0000
+#define DPI_OP0 8 //100x
+#define DPR_OP0 5 //x101
+#define LOAD_STORE_OP0 4 //x1x0
+#define BRANCH_OP0 10 //101x
+
 // Struct for instruction_t
 struct instruction_t {
 
@@ -16,7 +23,7 @@ struct instruction_t {
     // only one of these structs will exist in memory at a time
     union {
 	//Halt
-	struct {uint32_t halt_val} halt;
+	struct {uint32_t halt_val;} halt;
 
         // DP Imm
         struct {

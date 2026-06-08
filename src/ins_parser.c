@@ -14,9 +14,12 @@ bool parse(char *line, uint32_t *addr, instruction_t ins) {
 	
 	switch (get_op_t(tl)) {
 	case HALT:
-	
-	case INTDIR:
+		ins->halt.halt_val = HALT;
+		ins->op0 = HALT_OP0;
+		return true;
 
+	case INTDIR:
+		
 	case ADD:
 		break;
 	case ADDS:
