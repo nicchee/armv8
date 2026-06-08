@@ -1,15 +1,32 @@
 #include "symtable.h"
 #include "instruction.h"
 #include "ins_parser.h" //includes tokeniser.h
+#include "tokeniser.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+
+
+// Using an enum type op_t so switch case can be used in parser
+typedef enum {
+	ADD, ADDS, 
+	SUB, SUBS, 
+	AND, ANDS, BIC, BICS, EOR, EON, ORR, ORN, 
+	MOVN, MOVK, MOVZ, MADD, MSUB, 
+	B, BCOND, 
+	LDR, STR, 
+	HALT, 
+	INTDIR,
+	ALIAS
+} op_t;
+// Use B for both literal and register in branching
 
 //op_t op = get_op_t (tl);
 //	returns op from tokenisedline
-op_t get_op_t (TokenisedLine tl){
+static op_t get_op_t (TokenisedLine tl){
 	char *opcstr = tl.opcode;
 	//Arithmetic
 	if (strcmp(opcstr, "add") == 0) return ADD;
@@ -72,10 +89,16 @@ op_t get_op_t (TokenisedLine tl){
 	}
 }
 
-bool parse(char *line, uint32_t *addr, instruction_t ins) {
+void parse(char *line, uint32_t *addr, instruction_t ins) {
+	// STUB
+	// check line is null terminated (IMPORT THIS FROM TWO PASS NULL TERMINATED HELPER FUNCTION!)
+	
 	TokenisedLine tl = tokenise(line);
+
+	// checks if opcode is missing
 	if (tl.opcode == NULL) {
-		return false;
+		fprintf(stderr, "Opcode is missing!\n");
+		exit(EXIT_FAILURE);
 	}
 	
 	switch (get_op_t(tl)) {
