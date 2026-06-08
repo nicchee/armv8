@@ -5,6 +5,12 @@
 #include <string.h>
 #include <assert.h>
 
+bool null_terminated(char *s, int max) {
+	for (int i = 0; i < max; i++) {
+		if (s[i] == '\0') { return true; }
+	}
+	return false;
+}
 
 //Create symbol table, return pointer
 symtable init_table(void) {
@@ -37,6 +43,7 @@ bool insert_symkv(symtable table, sym_t s, uint32_t address) {
 	assert(table != NULL && s != NULL);
 
 	// check s is NULL terminated
+	assert(null_terminated(s, MAX_SYM_LEN));
 
 	// Grow if table is full
 	if (table->count >= table->cap) {
@@ -44,9 +51,9 @@ bool insert_symkv(symtable table, sym_t s, uint32_t address) {
 		table->entries = realloc(table->entries, table->cap * sizeof(symkv_t));
 	}	
 
-	//Check if symbol alr in table - linear search
+	//Check if symbol already in table - linear search
 	for (int i = 0; i < table->count; i++) {
-		if (strcmp((const char*) s, table->entries[i].symbol) == 0) {
+		if (strcmp( s, table->entries[i].symbol) == 0) {
 			fprintf(stderr, "Duplicate symbol definition\n");
 			return false;
 		}
@@ -55,15 +62,15 @@ bool insert_symkv(symtable table, sym_t s, uint32_t address) {
 	//Symbol not in table -> insert entry
 	int currIndex = table->count;
 	//Prevent buffer overrun, check if s is too long for buffer
-	if (strlen(*s) > (MAX_SYM_LEN - 1) ) {
+	if (strlen(s) > (MAX_SYM_LEN - 1) ) {
 		fprintf(stderr, "Symbol too long to fit in buffer\n");
 		return false;
 	}
 
 	// s and its null terminator will fit in buffer so can strncpy safely and return
-	strncpy(table->entries[currIndex].symbol, (const char*) s, MAX_SYM_LEN);
+	strcpy(table->entries[currIndex].symbol, s);
 	table->entries[currIndex].addr = address;
-	(table->count)++;
+	table->count++;
 	return true;
 }
 
@@ -71,7 +78,7 @@ bool insert_symkv(symtable table, sym_t s, uint32_t address) {
 uint32_t get_addr(symtable table, sym_t s) {
 	//int currIndex = table->count; - if no bug then delete
 	for (int i = 0; i < table->count; i++) {
-		if (strcmp((const char*) s, table->entries[i].symbol) == 0) {
+		if (strcmp(s, table->entries[i].symbol) == 0) {
 			return table->entries[i].addr;
 		}
 	}
