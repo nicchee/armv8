@@ -9,7 +9,7 @@ CFLAGS  ?= -std=c17 -g\
 
 all: assemble emulate
 
-assemble: assemble.o symtable.o
+assemble: assemble.o symtable.o instruction.o
 
 emulate: emulate.o single_data_transfer.o dpi.o branch.o machine_state.o
 
@@ -19,6 +19,7 @@ dpi.o: dpi.c dpi.h machine_state.h
 branch.o: branch.c machine_state.h branch.h
 machine_state.o: machine_state.c machine_state.h
 symtable.o: symtable.c symtable.h
+instruction.o: instruction.c instruction.h
 
 clean:
 	$(RM) *.o assemble emulate

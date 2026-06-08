@@ -1,4 +1,5 @@
 #include "symtable.h"
+#include "instruction.h"
 //#include "fileio.h"
 
 #include <stdio.h>
