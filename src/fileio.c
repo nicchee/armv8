@@ -19,28 +19,29 @@ void bin_file_write(const char *fileName, uint32_t *bin) {
 	fclose(in);
 }
 
+// CONSIDERING TO REMOVE
 // Assembly file reader - passes each line to instruction parser
-void asm_file_read(const char* fileName) {
-	FILE *in = fopen(fileName, "r");
-	if (in == NULL) {
-		fprintf(stderr, "Can't open assembly file");
-		exit(1);
-	}
+// void asm_file_read(const char* fileName) {
+// 	FILE *in = fopen(fileName, "r");
+// 	if (in == NULL) {
+// 		fprintf(stderr, "Can't open assembly file");
+// 		exit(1);
+// 	}
 
-	char line[MAX_LINE_LEN];
-	int len = strlen(line);
-	// if line len > MAX_LINE_LEN -1, likely to be syntactically wrong, ignore this line and don't send to parser
-	while (fgets(line, sizeof(line), in) != NULL) {
-		if (len > 0 && line[len-1] != '\n' && !feof(in)) {
-			fprintf(stderr, "Line longer than max length of %d, not passed to parser", MAX_LINE_LEN-1);
-			int ch;
-			while ((ch = getc(in)) != EOF && ch != '\n') {
-				//empty body - ignore rest of line
-			}
-		continue;
-		}
-	parse_ins(line);
-	} 
-	fclose(in);
-}
+// 	char line[MAX_LINE_LEN];
+// 	int len = strlen(line);
+// 	// if line len > MAX_LINE_LEN -1, likely to be syntactically wrong, ignore this line and don't send to parser
+// 	while (fgets(line, sizeof(line), in) != NULL) {
+// 		if (len > 0 && line[len-1] != '\n' && !feof(in)) {
+// 			fprintf(stderr, "Line longer than max length of %d, not passed to parser", MAX_LINE_LEN-1);
+// 			int ch;
+// 			while ((ch = getc(in)) != EOF && ch != '\n') {
+// 				//empty body - ignore rest of line
+// 			}
+// 		continue;
+// 		}
+// 	parse_ins(line);
+// 	} 
+// 	fclose(in);
+// }
 
