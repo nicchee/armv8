@@ -8,11 +8,36 @@ typedef enum {UNSIGNED_OFFSET, PRE_POST_INDEX, REG_OFFSET, LIT_LOAD} sdt_mode_t;
 typedef enum {UNCOND, REG, COND} branch_type_t;
 
 #define HALT_INS 0x8a000000
-#define HALT_OP0 0 //0000
-#define DPI_OP0 8 //100x
-#define DPR_OP0 5 //x101
-#define LOAD_STORE_OP0 4 //x1x0
-#define BRANCH_OP0 10 //101x
+
+// OP0
+#define HALT_OP0 0 			//0000
+#define DPI_OP0 8 			//100x
+#define DPR_OP0 5 			//x101
+#define LOAD_STORE_OP0 4 	//x1x0
+#define BRANCH_OP0 10 		//101x
+
+// OPC
+#define ADD_OPC 0 	//00
+#define ADDS_OPC 1	//01
+#define SUB_OPC 2	//10
+#define SUBS_OPC 3	//11
+
+// OPC
+#define ARITH_OPI 2 //010
+#define WIDE_OPI 5 	//101
+
+// OPR
+#define ARITH_OPR 0xf 	// 1xx0
+#define BIT_OPR 0x0		// 0xxx
+#define MUL_OPR 0xf		// 1000
+
+// SHIFT 
+#define LSL_SHIFT 0	// 00
+#define LSR_SHIFT 1	// 01
+#define ASR_SHIFT 2	// 10
+#define RSR_SHIFT 3	// 11 (ONLY FOR LOGICAL)
+
+
 
 // Struct for instruction_t
 struct instruction_t {

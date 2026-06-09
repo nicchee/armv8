@@ -3,7 +3,20 @@
 
 #define HALT_OPERAND "x0"
 
-void parse(char *line, uint32_t *addr, instruction_t ins);
+// Using an enum type op_t so switch case can be used in parser
+typedef enum {
+	ADD, ADDS, 
+	SUB, SUBS, 
+	AND, ANDS, BIC, BICS, EOR, EON, ORR, ORN, 
+	MOVN, MOVK, MOVZ, MADD, MSUB, 
+	B, BCOND, 
+	LDR, STR, 
+	HALT, 
+	INTDIR,
+	ALIAS
+} op_t;
 
+
+void parse(char *line, uint32_t *addr, instruction_t ins);
 
 #endif

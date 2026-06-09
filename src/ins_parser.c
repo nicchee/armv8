@@ -2,6 +2,7 @@
 #include "instruction.h"
 #include "ins_parser.h" //includes tokeniser.h
 #include "tokeniser.h"
+#include "op_funcs.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -9,19 +10,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-
-// Using an enum type op_t so switch case can be used in parser
-typedef enum {
-	ADD, ADDS, 
-	SUB, SUBS, 
-	AND, ANDS, BIC, BICS, EOR, EON, ORR, ORN, 
-	MOVN, MOVK, MOVZ, MADD, MSUB, 
-	B, BCOND, 
-	LDR, STR, 
-	HALT, 
-	INTDIR,
-	ALIAS
-} op_t;
 // Use B for both literal and register in branching
 
 //op_t op = get_op_t (tl);
@@ -89,11 +77,15 @@ static op_t get_op_t (TokenisedLine tl){
 	}
 }
 
+//parse(rawline, curraddr, ins)
+//	parse raw line to insert value into parts of the ins struct
 void parse(char *line, uint32_t *addr, instruction_t ins) {
 	// STUB
 	// check line is null terminated (IMPORT THIS FROM TWO PASS NULL TERMINATED HELPER FUNCTION!)
 	
 	TokenisedLine tl = tokenise(line);
+
+	
 
 	// checks if opcode is missing
 	if (tl.opcode == NULL) {
@@ -136,43 +128,47 @@ void parse(char *line, uint32_t *addr, instruction_t ins) {
 	case STR:
 	case ALIAS: // 9 Aliases in total (neg, negs counted as 2)
 	// cmp <-> subs
-	if (strcmp(tl.opcode, "cmp") == 0) {
+		if (strcmp(tl.opcode, "cmp") == 0) {
 
-	}	
-	// cmn <-> adds
-	else if (strcmp(tl.opcode, "cmn") == 0) {
+		}	
+		// cmn <-> adds
+		else if (strcmp(tl.opcode, "cmn") == 0) {
 
-	}	
-	// neg, negs <-> sub, subs
-	else if (strcmp(tl.opcode, "neg") == 0 ||
-			strcmp(tl.opcode, "negs" == 0)) {
+		}	
+		// neg, negs <-> sub, subs
+		else if (strcmp(tl.opcode, "neg") == 0 ||
+				strcmp(tl.opcode, "negs" == 0)) {
 
-	}	
-	// tst <-> ands
-	else if (strcmp(tl.opcode, "tst") == 0) {
+		}	
+		// tst <-> ands
+		else if (strcmp(tl.opcode, "tst") == 0) {
 
-	}	
-	// mvn <-> orn
-	else if (strcmp(tl.opcode, "mvn") == 0) {
+		}	
+		// mvn <-> orn
+		else if (strcmp(tl.opcode, "mvn") == 0) {
 
-	}	
-	// mov <-> orr
-	else if (strcmp(tl.opcode, "mov") == 0) {
+		}	
+		// mov <-> orr
+		else if (strcmp(tl.opcode, "mov") == 0) {
 
-	}	
-	// mul <-> madd
-	else if (strcmp(tl.opcode, "mul") == 0) {
+		}	
+		// mul <-> madd
+		else if (strcmp(tl.opcode, "mul") == 0) {
 
-	}	
-	// mneg <-> msub
-	else if (strcmp(tl.opcode, "mneg") == 0) {
+		}	
+		// mneg <-> msub
+		else if (strcmp(tl.opcode, "mneg") == 0) {
 
-	}
-	else {
-		printf(stderr, "Alias not recognised");
-		return false;
-	}
+		}
+		else {
+			printf(stderr, "Alias not recognised");
+			return false;
+		}
 
 } //end of switch statement
 } //end of parse function
+
+
+
+
 
