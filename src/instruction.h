@@ -22,14 +22,31 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define SUB_OPC 2	//10
 #define SUBS_OPC 3	//11
 
-// OPC
+#define MOVN_OPC 0	//00 
+#define MOVZ_OPC 2	//10 
+#define MOVK_OPC 3	//11 
+
+
+
+#define AND_OPC 0 	//00
+#define BIC_OPC 0 	//00
+#define ORR_OPC 1 	//00
+#define ORN_OPC 1 	//00
+#define EOR_OPC 2 	//00
+#define EON_OPC 2 	//00
+#define ANDS_OPC 3 	//00
+#define BICS_OPC 3 	//00
+
+#define MUL_OPC 0	//00 
+
+// OPI
 #define ARITH_OPI 2 //010
 #define WIDE_OPI 5 	//101
 
 // OPR
-#define ARITH_OPR 0xf 	// 1xx0
-#define BIT_OPR 0x0		// 0xxx
-#define MUL_OPR 0xf		// 1000
+#define ARITH_OPR 0x8 	// 1xx0
+#define LOGIC_OPR 0x0	// 0xxx
+#define MUL_OPR 0x8		// 1000
 
 // SHIFT 
 #define LSL_SHIFT 0	// 00
