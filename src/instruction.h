@@ -60,7 +60,6 @@ struct instruction_t {
 			uint8_t rt; 
 			uint32_t sf;
 			sdt_mode_t mode;
-
 			// Either Single Data Transfer or Load Literal
 			union {
 				// Single Data Transfer: mode == 0 or 1 or 2
