@@ -48,12 +48,13 @@ static op_t get_op_t (TokenisedLine tl){
 	else if (strcmp(opcstr, "msub") == 0) return MSUB;
 
 	// Branch
-	else if ((strcmp(opcstr, "b") == 0 || strcmp(opcstr, "br") == 0) ) return B;
+	else if ((strcmp(opcstr, "b") == 0 || 
+		strcmp(opcstr, "br") == 0) ) return B;
 	else if (strcmp(opcstr, "b.") == 0) return BCOND;
 
 	// Load/store
-	else if (strcmp(opcstr, "ldr") == 0) return LDR;
-	else if (strcmp(opcstr, "str") == 0) return STR;
+	else if (strcmp(opcstr, "ldr") == 0 || 
+		strcmp(opcstr, "str") == 0) return LOAD_STORE;
 
 	// .int directive 
 	else if (strcmp(opcstr, ".int") == 0) return INTDIR;

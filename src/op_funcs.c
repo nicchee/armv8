@@ -274,6 +274,9 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	} //endif for SDT
 } //end of parseLS 
 
+static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
+
+}
 
 // array of function pointers
 op_func_ptr op_func_arr[] = {
@@ -295,8 +298,9 @@ op_func_ptr op_func_arr[] = {
 	[MADD] = &parseMADD,
 	[MSUB] = &parseMSUB,
 	[B] = &parseB,
-	[BCOND] = &parseBCOND
-
+	[BCOND] = &parseBCOND,
+	[LOAD_STORE] = &parseLS,
+	[INTDIR] = &parseINTDIR
 };
 
 //Alias parsing helper functions

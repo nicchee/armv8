@@ -65,13 +65,19 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 // Struct for instruction_t
 struct instruction_t {
     uint32_t op0; 	// defines operation: DP_IMM, DP_REG, LOAD_STORE, BRANCH 
-					// 0101 if HALT
     // only one of these structs will exist in memory at a time
     union {
-	//Halt
+		//Halt
 		struct {
 			uint32_t halt_val;
 		} halt;
+		
+		//Int Directive
+		struct {
+			bool is_label;
+			uint32_t int_val;
+			char *label;
+		} int_dir;
 
 		// DP Imm
 		struct {
