@@ -13,13 +13,13 @@ void first_pass(FILE *in) {
     while ( fgets(line, sizeof(line), in) != NULL) {
 		if (*line == '\n') { continue; } //empty line
 		int len = strlen(line);
-        line[--len] = '\0'; //remove '\n' from line
+        line[--len] = '\0'; //remove '\n' from line and null terminate
 		if (len > 0 && !feof(in)) {
 			fprintf(stderr, "Line longer than max length of %d, not passed to parser\n", MAX_LINE_LEN-1);
 			fclose(in);
 			exit(EXIT_FAILURE);
 		}
-		parse_ins(line);
+		parse(line);
 	}
 }
 

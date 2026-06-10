@@ -274,8 +274,18 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	} //endif for SDT
 } //end of parseLS 
 
-static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
-
+static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	if (isdigit(tl.operands[0][0]) || 
+	tl.operands[0][0] == '-') { //number
+		ins->int_dir.is_label = false;
+		ins->int_dir.int_val = (uint32_t) strtol(tl.operands[0], NULL, 0);
+		ins->int_dir.label = NULL;
+	} else { //label
+		ins->int_dir.is_label = true;
+		ins->int_dir.int_val = 0;
+		ins->int_dir.label = strdup(tl.operands[0]);
+	}
+	*addr += 4; //.int directive always takes up 4 bytes of memory
 }
 
 // array of function pointers

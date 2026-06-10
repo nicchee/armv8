@@ -137,8 +137,7 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 //parse(rawline, curraddr, ins)
 //	parse raw line to insert value into parts of the ins struct
 void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
-	// STUB
-	// check line is null terminated (IMPORT THIS FROM TWO PASS NULL TERMINATED HELPER FUNCTION!)
+	// line is null terminated in two pass before passing to parse 
 	
 	TokenisedLine tl = tokenise(line);
 	
