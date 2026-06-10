@@ -223,30 +223,56 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	ins->op0 = LOAD_STORE_OP0;
 	ins->load_store.rt = reg_index(tl.operands[0]);
 	ins->load_store.sf = operand_starts_with(tl, 0, 'x');
-	if (!operand_starts_with(tl, 1, '[')) { // literal
+
+	//Load Literal
+	if (!operand_starts_with(tl, 1, '[')) { 
 		ins->load_store.mode = LIT_LOAD;
 		ins->load_store.simm19 = get_offset(*addr, tl.operands[1], table);
-	} else if (((tl.operands[1])[strlen(tl.operands[1]) - 1]) != ']' ) { // pre/post-index
-		ins->load_store.mode = PRE_POST_INDEX;
+	}
+	
+	//SDT
+	else { 
+		// Shared SDT vars: L and xn
+		ins->load_store.sdt.L = (strcmp(tl.opcode, "ldr") == 0)? 1: 0;
 		char *xn = (ins->load_store.sf) ? // 1 -> x, 0 -> w
-			strchr(tl.operands[1], 'x') : strchr(tl.operands[1], 'w');
+			strchr(tl.operands[1], 'x') : 
+			strchr(tl.operands[1], 'w');
 		assert (xn != NULL);
 		ins->load_store.sdt.xn = reg_index(xn);
-		char *simm = (tl.num_operands == 3) ?
-			strchr(tl.operands[2], '#') : strchr(tl.operands[1], '#');
-		assert (simm != NULL);
-		ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm,9); 
-		ins->load_store.sdt.pre_post_index.I = tl.num_operands == 2; // 1 -> pre, 0 -> post
-		ins->load_store.sdt.L = 
 		
-		 
-	}
-	ins->load_store.mode = 
-} 
-	// LDR, STR, 
-	// HALT, 
-	// INTDIR,
-	// ALIAS
+		// Pre/ Post Index
+		if (((tl.operands[1])[strlen(tl.operands[1]) - 1]) != ']' ) { 
+			ins->load_store.mode = PRE_POST_INDEX;
+			char *simm = (tl.num_operands == 3) ?
+				strchr(tl.operands[2], '#') : 
+				strchr(tl.operands[1], '#');
+			assert (simm != NULL);
+			ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm,9); 
+			ins->load_store.sdt.pre_post_index.I = tl.num_operands == 2; // 1 -> pre, 0 -> post
+		}
+	
+		// Reg offset: ldr rt, [xn, xm]
+		else if (tl.num_operands == 3 && 
+			&& !operand_starts_with(tl, 2, '#')) { 
+			ins->load_store.mode = REG_OFFSET;
+			ins->load_store.sdt.xm = reg_index(tl.operands[2]);
+		}
+
+		//Unsigned offset: ldr rt, [xn{, #<imm>}]
+		else {
+			ins->load_store.mode = UNSIGNED_OFFSET;
+			ins->load_store.sdt.unsigned_offset.U = 1;
+			char *imm = (tl.num_operands == 3) ?
+				strchr(tl.operands[2], '#') : 
+				NULL; 
+			//if not given #<imm>, set imm to 0
+			uint32_t parsed_imm = imm ? z_ext(imm) : 0;
+			ins->load_store.sdt.unsigned_offset.imm12 = 
+				parsed_imm / (ins->load_store.sf ? 8 : 4); 
+		}
+
+	} //endif for SDT
+} //end of parseLS 
 
 
 // array of function pointers
