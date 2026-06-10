@@ -12,7 +12,7 @@
 // Instruction
 static void bin_file_load(uint8_t *memory, const char *fileName);
 static uint32_t fetch(mstate_t *mstate_p);
-static void decode_execute(uint32_t ins, mstate_t *mstate_p);
+static void decode_execute(uint32_t ins, mstate_t *mstate_p, instruction_t *insp);
 
 #define SHIFT_OP0 25
 #define MASK1110 14
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 			}
 			break;
 		} else {
-			decode_execute(ins, &mState);
+			decode_execute(ins, &mState, &instruction);
 		}
 	}
 	free_state(&mState);
