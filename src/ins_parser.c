@@ -72,19 +72,19 @@ static op_t get_op_t (TokenisedLine tl){
 	
 	// If it's not a known instruction AND not a known alias, it's a typo
 	else {
-    fprintf(stderr, "Syntax Error: Unknown instruction '%s'\n", opcstr);
-    exit(EXIT_FAILURE);
+    	fprintf(stderr, "Syntax Error: Unknown instruction '%s'\n", opcstr);
+    	exit(EXIT_FAILURE);
 	}
 }
 
+
 //parse(rawline, curraddr, ins)
 //	parse raw line to insert value into parts of the ins struct
-void parse(char *line, uint32_t *addr, instruction_t ins) {
+void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
 	// STUB
 	// check line is null terminated (IMPORT THIS FROM TWO PASS NULL TERMINATED HELPER FUNCTION!)
 	
 	TokenisedLine tl = tokenise(line);
-
 	
 
 	// checks if opcode is missing
@@ -93,80 +93,80 @@ void parse(char *line, uint32_t *addr, instruction_t ins) {
 		exit(EXIT_FAILURE);
 	}
 	
-	switch (get_op_t(tl)) {
-	case HALT:
+	op_t op = get_op_t(tl);
+	if (op == HALT) {
 		ins->halt.halt_val = HALT_INS;
 		ins->op0 = HALT_OP0;
-		return true;
-
-	case INTDIR:
+	}
+	else if (op == INTDIR) {
 		
-	case ADD:
-		break;
-	case ADDS:
-		break;
-	case SUB:
-		break;
-	case SUBS:
-		break;
-	case AND:
-	case ANDS:
-	case BIC:
-	case BICS:
-	case EOR:
-	case EON:
-	case ORR:
-	case ORN:
-	case MOVN:
-	case MOVK:
-	case MOVZ:
-	case MADD:
-	case MSUB:
-	case B:
-	case BCOND:
-	case LDR:
-	case STR:
-	case ALIAS: // 9 Aliases in total (neg, negs counted as 2)
-	// cmp <-> subs
+
+	}
+
+	else if (op == ALIAS) {
+		//cmp rn, <op2> -> subs rzr, rn, <op2>
 		if (strcmp(tl.opcode, "cmp") == 0) {
-
+			shift_all_ops(&tl);
+			set_op_to_rzr(&tl, 0, 1);
+			(*op_func_arr[SUBS]) (table, tl, addr, ins);
 		}	
-		// cmn <-> adds
+		// cmn rn, <op2> -> adds rzr, rn, <op2>
 		else if (strcmp(tl.opcode, "cmn") == 0) {
-
+			shift_all_ops(&tl);
+			set_op_to_rzr(&tl, 0, 1);
+			(*op_func_arr[ADDS]) (table, tl, addr, ins);
 		}	
-		// neg, negs <-> sub, subs
-		else if (strcmp(tl.opcode, "neg") == 0 ||
-				strcmp(tl.opcode, "negs" == 0)) {
-
+		// neg(s) rd, <op2> <-> sub(s) rd, rzr, <op2>
+		else if (strcmp(tl.opcode, "neg") == 0) {
+			tl.operands[2] = tl.operands[1];
+			set_op_to_rzr(&tl, 1, 0);
+			(*op_func_arr[SUB]) (table, tl, addr, ins);
+		}
+		else if	(strcmp(tl.opcode, "negs") == 0) {
+			tl.operands[2] = tl.operands[1];
+			set_op_to_rzr(&tl, 1, 0);
+			(*op_func_arr[SUBS]) (table, tl, addr, ins);
 		}	
-		// tst <-> ands
+		// tst rn, <op2> -> ands rzr, rn, <op2>
 		else if (strcmp(tl.opcode, "tst") == 0) {
-
+			shift_all_ops(&tl);
+			set_op_to_rzr(&tl, 0, 1);
+			(*op_func_arr[ANDS]) (table, tl, addr, ins);
 		}	
-		// mvn <-> orn
+		// mvn rd, <op2> -> orn rd, rzr, <op2>
 		else if (strcmp(tl.opcode, "mvn") == 0) {
-
+			tl.operands[2] = tl.operands[1];
+			set_op_to_rzr(&tl, 1, 0);
+			(*op_func_arr[ORN]) (table, tl, addr, ins);
 		}	
-		// mov <-> orr
+		// mov rd, rm -> orr rd, rzr, rm
 		else if (strcmp(tl.opcode, "mov") == 0) {
-
+			tl.operands[2] = tl.operands[1];
+			set_op_to_rzr(&tl, 1, 0);
+			(*op_func_arr[ORR]) (table, tl, addr, ins);
 		}	
-		// mul <-> madd
+		// mul rd, rn, rm -> madd rd, rn, rm, rzr
 		else if (strcmp(tl.opcode, "mul") == 0) {
-
+			set_op_to_rzr(&tl, 3, 0);
+			(*op_func_arr[MADD]) (table, tl, addr, ins);
 		}	
-		// mneg <-> msub
-		else if (strcmp(tl.opcode, "mneg") == 0) {
-
+		// mneg rd, rn, rm -> msub rd, rn, rm, rzr 
+		// Get_op_t already checks that Alias is valid so must be mneg
+		else { 
+			set_op_to_rzr(&tl, 3, 0);
+			(*op_func_arr[MSUB]) (table, tl, addr, ins);
 		}
-		else {
-			printf(stderr, "Alias not recognised");
-			return false;
-		}
+	} //end of Alias parsing
 
-} //end of switch statement
-} //end of parse function
+	// Non-alias functions: use function pointer array from op_funcs.c
+	else {
+		if (op_func_arr[op] != NULL) {
+			(*op_func_arr[op]) (table, tl, addr, ins);
+		} else fprintf(stderr, "Function pointer in op_func_arr was null");
+	}
+
+
+}
 
 
 

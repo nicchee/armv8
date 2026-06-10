@@ -273,4 +273,17 @@ op_func_ptr op_func_arr[] = {
 
 };
 
+//Alias parsing helper functions
+
+//Shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
+void shift_all_ops(TokenisedLine *tl) {
+	for (int i = 0; i < tl->num_operands; i++) {
+		tl->operands[i] = tl->operands[i-1];
+	}
+} 
+//Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
+void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
+	tl->operands[set] = (tl->operands[check][0]) == 'x' ? "xzr" : "wzr";
+	tl->num_operands++;
+} 
 
