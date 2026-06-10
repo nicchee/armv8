@@ -26,8 +26,6 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define MOVZ_OPC 2	//10 
 #define MOVK_OPC 3	//11 
 
-
-
 #define AND_OPC 0 	//00
 #define BIC_OPC 0 	//00
 #define ORR_OPC 1 	//00
@@ -54,6 +52,14 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define ASR_SHIFT 2	// 10
 #define RSR_SHIFT 3	// 11 (ONLY FOR LOGICAL)
 
+// BRANCH COND
+#define B_EQ 0X0 // 0000
+#define B_NE 0X1 // 0001
+#define B_GE 0Xa // 1010
+#define B_LT 0Xb // 1011
+#define B_GT 0Xc // 1100
+#define B_LE 0Xd // 1101
+#define B_AL 0Xe // 1110
 
 
 // Struct for instruction_t
@@ -116,7 +122,7 @@ struct instruction_t {
 							uint32_t I;
 							int32_t simm9;
 						} pre_post_index; // mode == 1
-					uint8_t xm; // reg_offset: mode == 2
+						uint8_t xm; // reg_offset: mode == 2
 					};
 				} sdt;
 				// Load Literal: mode == 3

@@ -1,8 +1,10 @@
 #include "op_funcs.h"
 #include "ins_parser.h"
+#include "symtable.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 //if (operand_starts_with(tl, index, c)) {..}
 //	return true if operand at index start with c
@@ -10,10 +12,15 @@ static int operand_starts_with(TokenisedLine tl, int index, char c) {
 	return *(tl.operands[index]) == c;
 }
 
+static bool compare_string(char *s1, char *s2) {
+	return (strcmp(s1, s2) == 0) ? true : false;  
+}
+
 static uint8_t reg_index(char *reg) {
 	return atoi(reg + 1);
 } 
 
+//	sign extend an immediate value that takes the form of "#_"
 static int32_t s_ext(char *imm, int bits) {
 	int imm_val = atoi(imm + 1);
 	int shift = 32 - bits;
@@ -24,15 +31,22 @@ static int32_t s_ext(char *imm, int bits) {
 	return ((int32_t)(imm_val << shift)) >> shift; 
 }
 
+//	zero extend an immediate value that takes the form of "#_"
 static uint32_t z_ext(char *imm) {
 	int imm_val = atoi(imm + 1); //remove '#'
 
 	return 0xffff & imm_val;
 }
 
+static int32_t get_offset(uint32_t curraddr, char *lit, symtable table) {
+	int32_t targetaddr = (*lit == '#') ? // first character of literal is # (immediate value)
+			s_ext(lit, 26) : get_addr(table, lit);
+
+	return (targetaddr - curraddr) / 4;
+}
+
 static void parse_dp (
 	TokenisedLine tl, 
-	uint32_t *addr, 
 	instruction_t ins, 
 	int opc,
 	int opr, 
@@ -45,7 +59,7 @@ static void parse_dp (
 		ins->dp_imm.opi = ARITH_OPI;
 		ins->dp_imm.rd = reg_index(tl.operands[0]);
 		ins->dp_imm.arith.rn = reg_index(tl.operands[1]);
-		ins->dp_imm.arith.sh = tl.num_operands == 5 && (strcmp(tl.operands[4], "#12") == 0);  // sh == 1 (lsl imm by 12)
+		ins->dp_imm.arith.sh = tl.num_operands == 5 && (compare_string(tl.operands[4], "#12"));  // sh == 1 (lsl imm by 12)
 		ins->dp_imm.arith.imm12 = z_ext(tl.operands[2]);
 	} else { // dpi reg 
 		ins->op0 = DPR_OP0;
@@ -75,60 +89,57 @@ static void parse_dp (
 }
 
 // op functions:
-static void parseADD(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, ADD_OPC, ARITH_OPR, 0);
+static void parseADD(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, ADD_OPC, ARITH_OPR, 0);
 }
 
-static void parseADDS(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, ADDS_OPC, ARITH_OPR, 0);
+static void parseADDS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, ADDS_OPC, ARITH_OPR, 0);
 }
 
-static void parseSUB(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, SUB_OPC, ARITH_OPR, 0);
+static void parseSUB(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, SUB_OPC, ARITH_OPR, 0);
 }
 
-static void parseSUBS(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, SUBS_OPC, ARITH_OPR, 0);
+static void parseSUBS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, SUBS_OPC, ARITH_OPR, 0);
 }
 
-static void parseAND(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, AND_OPC, LOGIC_OPR, 0);
+static void parseAND(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, AND_OPC, LOGIC_OPR, 0);
 }
 
-static void parseANDS(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, ANDS_OPC, LOGIC_OPR, 0);
+static void parseANDS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, ANDS_OPC, LOGIC_OPR, 0);
 }
 
-static void parseBIC(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, BIC_OPC, LOGIC_OPR, 1);
+static void parseBIC(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, BIC_OPC, LOGIC_OPR, 1);
 }
 
-static void parseBICS(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, BICS_OPC, LOGIC_OPR, 1);
+static void parseBICS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, BICS_OPC, LOGIC_OPR, 1);
 }
 
-static void parseEOR(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, EOR_OPC, LOGIC_OPR, 0);
+static void parseEOR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, EOR_OPC, LOGIC_OPR, 0);
 }
 
-static void parseEON(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, EON_OPC, LOGIC_OPR, 1);
+static void parseEON(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, EON_OPC, LOGIC_OPR, 1);
 }
 
-static void parseORR(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, ORR_OPC, LOGIC_OPR, 0);
+static void parseORR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl, ins, ORR_OPC, LOGIC_OPR, 0);
 }
 
-static void parseORN(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parse_dp (tl, addr, ins, ORN_OPC, LOGIC_OPR, 1);
+static void parseORN(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_dp (tl,ins, ORN_OPC, LOGIC_OPR, 1);
 }
-
-
 	
 
 static void parseMOVKNZ(
 	TokenisedLine tl, 
-	uint32_t *addr, 
 	instruction_t ins, 
 	int opc
 ) {
@@ -141,23 +152,17 @@ static void parseMOVKNZ(
 	ins->dp_imm.wide.imm16 = z_ext(tl.operands[1]);
 }
 
-static void parseMOVK(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parseMOVKNZ(tl, addr, ins, MOVK_OPC);
+static void parseMOVK(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parseMOVKNZ(tl, ins, MOVK_OPC);
 }
 
-static void parseMOVN(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parseMOVKNZ(tl, addr, ins, MOVN_OPC);
+static void parseMOVN(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parseMOVKNZ(tl, ins, MOVN_OPC);
 }
 
-static void parseMOVZ(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parseMOVKNZ(tl, addr, ins, MOVZ_OPC);
+static void parseMOVZ(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parseMOVKNZ(tl, ins, MOVZ_OPC);
 }
-
-	// B, BCOND, 
-	// LDR, STR, 
-	// HALT, 
-	// INTDIR,
-	// ALIAS
 
 static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x) {
 	ins->op0 = DPR_OP0;
@@ -180,6 +185,68 @@ static void parseMSUB(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parseMULL(tl, addr, ins, 1);
 }
 
+static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins, branch_type_t type) {
+	ins->op0 = BRANCH_OP0;
+	ins->branch.type = type;
+	if (type = UNCOND) { // BRANCH UNCOND
+		ins->branch.simm26 = get_offset(*addr, tl.operands[0], table); // offset 
+	} else { // BRANCH COND
+		ins->branch.cond_t.simm19 = s_ext(tl.operands[1], 19);
+		char * cond = tl.opcode + 2;
+		if (compare_string(cond, "eq")) {
+			ins->branch.cond_t.cond = B_EQ;
+		} else if (compare_string(cond, "ne")) {
+			ins->branch.cond_t.cond = B_NE;
+		} else if (compare_string(cond, "ge")) {
+			ins->branch.cond_t.cond = B_GE;
+		} else if (compare_string(cond, "lt")) {
+			ins->branch.cond_t.cond = B_LT;
+		} else if (compare_string(cond, "gt")) {
+			ins->branch.cond_t.cond = B_GT;
+		} else if (compare_string(cond, "le")) {
+			ins->branch.cond_t.cond = B_LE;
+		} else {
+			ins->branch.cond_t.cond = B_AL;
+		}
+	}
+}
+
+static void parseB(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_B_COND(table, tl, addr, ins, UNCOND);
+}
+
+static void parseBCOND(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parse_B_COND(table, tl, addr, ins, COND);
+}
+
+static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
+	ins->op0 = LOAD_STORE_OP0;
+	ins->load_store.rt = reg_index(tl.operands[0]);
+	ins->load_store.sf = operand_starts_with(tl, 0, 'x');
+	if (!operand_starts_with(tl, 1, '[')) { // literal
+		ins->load_store.mode = LIT_LOAD;
+		ins->load_store.simm19 = get_offset(*addr, tl.operands[1], table);
+	} else if (((tl.operands[1])[strlen(tl.operands[1]) - 1]) != ']' ) { // pre/post-index
+		ins->load_store.mode = PRE_POST_INDEX;
+		char *xn = (ins->load_store.sf) ? // 1 -> x, 0 -> w
+			strchr(tl.operands[1], 'x') : strchr(tl.operands[1], 'w');
+		assert (xn != NULL);
+		ins->load_store.sdt.xn = reg_index(xn);
+		char *simm = (tl.num_operands == 3) ?
+			strchr(tl.operands[2], '#') : strchr(tl.operands[1], '#');
+		assert (simm != NULL);
+		ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm,9); 
+		ins->load_store.sdt.pre_post_index.I = tl.num_operands == 2; // 1 -> pre, 0 -> post
+		ins->load_store.sdt.L = 
+		
+		 
+	}
+	ins->load_store.mode = 
+} 
+	// LDR, STR, 
+	// HALT, 
+	// INTDIR,
+	// ALIAS
 
 
 // array of function pointers
@@ -200,7 +267,10 @@ op_func_ptr op_func_arr[] = {
 	[MOVN] = &parseMOVN,
 	[MOVZ] = &parseMOVZ,
 	[MADD] = &parseMADD,
-	[MSUB] = &parseMSUB
+	[MSUB] = &parseMSUB,
+	[B] = &parseB,
+	[BCOND] = &parseBCOND
 
 };
+
 

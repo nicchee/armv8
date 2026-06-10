@@ -5,7 +5,7 @@
 #include "tokeniser.h"
 #include "instruction.h"
 
-typedef void (*op_func_ptr) (TokenisedLine tl, uint32_t *addr, instruction_t ins); 
+typedef void (*op_func_ptr) (symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins); 
 
 extern op_func_ptr op_func_arr[]; 
 
