@@ -15,6 +15,7 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define DPR_OP0 5 			//x101
 #define LOAD_STORE_OP0 4 	//x1x0
 #define BRANCH_OP0 10 		//101x
+#define INTDIR_OP0 1
 
 // OPC
 #define ADD_OPC 0 	//00
