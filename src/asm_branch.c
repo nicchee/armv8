@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "instruction.h"
 
 static uint32_t reverse_sgx(int32_t value, unsigned int bits);
@@ -25,7 +26,8 @@ uint32_t assemble_branch(instruction_t *instr) {
                 | cond;
         }
     }
-return 0;
+fprintf(stderr, "ERROR(assemble_branch): branching doesn't work");
+return EXIT_FAILURE;
 }
 
 // helper
