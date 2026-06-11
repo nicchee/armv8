@@ -60,6 +60,19 @@ TokenisedLine tokenise(char *line) {
 	return result;
 }
 
+void free_tl(TokenisedLine *tl) {
+	if (tl == NULL) return;
+	free(tl->label);
+	free (tl->opcode);
+	for (int i = 0; i < tl->num_operands; i++) {
+		free tl->operands[i];
+		tl->operands[i] = NULL;
+	}
+	tl->label = NULL;
+	tl->opcode = NULL;
+}
+
+
 static TokenisedLine init_tokenised_line( void ) {
 	TokenisedLine result = { NULL, NULL, { NULL, NULL, NULL, NULL }, 0 };
 	return result;

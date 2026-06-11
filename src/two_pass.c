@@ -4,12 +4,15 @@
 #include "two_pass.h"
 #include "symtable.h"
 #include "fileio.h"
+#include "ins_parser.h"
 
-//first_pass (in);
+//first_pass (in, symtable);
 // 	pass through the whole assemble (.s) file and insert LABEL and its address into symtable
 //	start with curraddr = 0. if its not a label, curraddr += 4; else insert_symkv(..)
-void first_pass(FILE *in) {
+void first_pass(FILE *in, symtable table) {
     line_t line;
+    uint32_t currAddr = 0;
+
     while (fgets(line, sizeof(line), in) != NULL) {
 		if (*line == '\n') { continue; } //empty line
 		line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
@@ -18,8 +21,33 @@ void first_pass(FILE *in) {
 			fclose(in);
 			exit(EXIT_FAILURE);
 		}
-		parse(line);
+
+		TokenisedLine tl = tokenise(line);
+		if (tl.label == NULL) { //is not label -> skip
+			currAddr += 4;
+			free_tl(&tl);
+			continue;
+		} else { //is label -> insert into table
+			if (!insert_symkv(table, label, currAddr)) {
+				fprintf(stderr, "label not null but failed to insert into table");
+				exit(EXIT_FAILURE);
+			}
+		}
+		currAddr += 4;
+		free_tl(&tl);	
 	}
+	fclose(in);
+}
+
+void second_pass(FILE *in) {
+    line_t line;
+    uint32_t currAddr = 0;
+
+    while (fgets(line, sizeof(line), in) != NULL) {
+	if (tl.opcode != NULL) {
+		instruction_t ins = malloc(sizeof(struct instruction_t));
+	}
+
 }
 
 // NOT SURE THE FORM IT TAKES YET

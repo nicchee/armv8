@@ -12,13 +12,13 @@ typedef enum {
 	AND, ANDS, BIC, BICS, EOR, EON, ORR, ORN, 
 	MOVN, MOVK, MOVZ, MADD, MSUB, 
 	B, BCOND, 
-	LDR, STR, 
+	LOAD_STORE,
 	HALT, 
 	INTDIR,
 	ALIAS
 } op_t;
 
 
-void parse(char *line, uint32_t *addr, instruction_t ins);
+extern void parse(char *line, uint32_t *addr, instruction_t ins, symtable table);
 
 #endif
