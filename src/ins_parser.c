@@ -134,11 +134,10 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 
 
 
-//parse(rawline, curraddr, ins)
+//parse(rawline, curraddr, ins, symtable)
 //	parse raw line to insert value into parts of the ins struct
 void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
 	// line is null terminated in two pass before passing to parse 
-	
 	TokenisedLine tl = tokenise(line);
 	
 	// checks if opcode is missing
@@ -153,14 +152,10 @@ void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
 		ins->halt.halt_val = HALT_INS;
 		ins->op0 = HALT_OP0;
 	}
-	else if (op == INTDIR) {
-		
-
-	}
 	else if (op == ALIAS) {
 		parse_alias(table, &tl, addr, ins);
 	}	
-	// Non-alias functions: use function pointer array from op_funcs.c
+	// INTDIR or Non-alias functions: use function pointer array from op_funcs.c
 	else {
 		if (op_func_arr[op] != NULL) {
 			(*op_func_arr[op]) (table, tl, addr, ins);

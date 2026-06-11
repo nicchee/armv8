@@ -10,10 +10,9 @@
 //	start with curraddr = 0. if its not a label, curraddr += 4; else insert_symkv(..)
 void first_pass(FILE *in) {
     line_t line;
-    while ( fgets(line, sizeof(line), in) != NULL) {
+    while (fgets(line, sizeof(line), in) != NULL) {
 		if (*line == '\n') { continue; } //empty line
-		int len = strlen(line);
-        line[--len] = '\0'; //remove '\n' from line and null terminate
+		line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
 		if (len > 0 && !feof(in)) {
 			fprintf(stderr, "Line longer than max length of %d, not passed to parser\n", MAX_LINE_LEN-1);
 			fclose(in);
