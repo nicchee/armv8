@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#endif 
-
 #define MAX_SYM_LEN 64
 #define INITIAL_MAX_SYMTABLE_SIZE 256
 
@@ -30,5 +28,6 @@ extern void free_table(symtable table);
 extern bool insert_symkv(symtable table, sym_t s, uint32_t address);
 extern uint32_t get_addr(symtable table, sym_t s);
 
+#endif 
 
 

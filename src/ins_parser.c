@@ -92,12 +92,12 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 	}	
 	// neg(s) rd, <op2> <-> sub(s) rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "neg") == 0) {
-		tl.operands[2] = tl.operands[1];
+		tl->operands[2] = tl->operands[1];
 		set_op_to_rzr(&tl, 1, 0);
 		(*op_func_arr[SUB]) (table, *tl, addr, ins);
 	}
 	else if	(strcmp(tl->opcode, "negs") == 0) {
-		tl.operands[2] = tl.operands[1];
+		tl->operands[2] = tl->operands[1];
 		set_op_to_rzr(&tl, 1, 0);
 		(*op_func_arr[SUBS]) (table, *tl, addr, ins);
 	}	
@@ -109,13 +109,13 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 	}	
 	// mvn rd, <op2> -> orn rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "mvn") == 0) {
-		tl.operands[2] = tl.operands[1];
+		tl->operands[2] = tl->operands[1];
 		set_op_to_rzr(&tl, 1, 0);
 		(*op_func_arr[ORN]) (table, *tl, addr, ins);
 	}	
 	// mov rd, rm -> orr rd, rzr, rm
 	else if (strcmp(tl->opcode, "mov") == 0) {
-		tl.operands[2] = tl.operands[1];
+		tl->operands[2] = tl->operands[1];
 		set_op_to_rzr(&tl, 1, 0);
 		(*op_func_arr[ORR]) (table, *tl, addr, ins);
 	}	

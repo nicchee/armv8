@@ -1,4 +1,5 @@
-#include<string.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "tokeniser.h"
 
@@ -65,7 +66,7 @@ void free_tl(TokenisedLine *tl) {
 	free(tl->label);
 	free (tl->opcode);
 	for (int i = 0; i < tl->num_operands; i++) {
-		free tl->operands[i];
+		free (tl->operands[i]);
 		tl->operands[i] = NULL;
 	}
 	tl->label = NULL;

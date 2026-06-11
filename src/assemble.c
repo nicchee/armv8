@@ -1,6 +1,7 @@
 #include "symtable.h"
 #include "instruction.h"
-//#include "fileio.h"
+#include "two_pass.h"
+#include "bin_writer.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,27 +13,17 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	// FILE *in = fopen(fileName, "r");
-	// if (in == NULL) {
-	// 	fprintf(stderr, "Can't open assembly file");
-	// 	exit(1);
-	// }
+	FILE *in = fopen(argv[1], "r");
+	if (in == NULL) {
+		fprintf(stderr, "Error opening assembly file");
+		exit(EXIT_FAILURE);
+	}
 
-	// char line[MAX_LINE_LEN];
-	// int len = strlen(line);
-	// // if line len > MAX_LINE_LEN -1, likely to be syntactically wrong, ignore this line and don't send to parser
-	// while (fgets(line, sizeof(line), in) != NULL) {
-	// 	if (len > 0 && line[len-1] != '\n' && !feof(in)) {
-	// 		fprintf(stderr, "Line longer than max length of %d, not passed to parser", MAX_LINE_LEN-1);
-	// 		int ch;
-	// 		while ((ch = getc(in)) != EOF && ch != '\n') {
-	// 			//empty body - ignore rest of line
-	// 		}
-	// 	continue;
-	// 	}
-	// parse_ins(line);
-	// } 
-	// fclose(in);
+	symtable table = init_table();
+	first_pass(in, table);
+	second_pass(in, table, argv[2]);
+
+	free_table(table);
 
 	return EXIT_SUCCESS;
 }
