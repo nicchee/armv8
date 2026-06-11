@@ -39,19 +39,22 @@ void first_pass(FILE *in, symtable table) {
 	fclose(in);
 }
 
-void second_pass(FILE *in) {
+void second_pass(FILE *in, symtable table) {
     line_t line;
     uint32_t currAddr = 0;
+    rewind(in);
 
     while (fgets(line, sizeof(line), in) != NULL) {
+	if (*line == '\n') { continue; } //empty line
+	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
+	TokenisedLine tl = tokenise(line);
+
 	if (tl.opcode != NULL) {
 		instruction_t ins = malloc(sizeof(struct instruction_t));
+		parse(line, currAddr, ins, table);
 	}
 
+	free(&tl);
+	fclose(in);
+
 }
-
-// NOT SURE THE FORM IT TAKES YET
-// IDEA IS TO TAKE EVERY LINE OF THE .S FILE, CALL PARSE ON IT.
-// void second_pass(FILE *in) {
-
-// }
