@@ -1,10 +1,15 @@
 #include "op_funcs.h"
 #include "ins_parser.h"
 #include "symtable.h"
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+#include <assert.h>
+
+#define NUM_OPFUNCS 21
 
 //if (operand_starts_with(tl, index, c)) {..}
 //	return true if operand at index start with c
@@ -177,18 +182,18 @@ static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x)
 	ins->dp_reg.mul.ra = reg_index(tl.operands[3]);
 }
 
-static void parseMADD(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parseMULL(tl, addr, ins, 0);
+static void parseMADD(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parseMUL(tl, addr, ins, 0);
 }
 
-static void parseMSUB(TokenisedLine tl, uint32_t *addr, instruction_t ins) {
-	parseMULL(tl, addr, ins, 1);
+static void parseMSUB(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	parseMUL(tl, addr, ins, 1);
 }
 
 static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins, branch_type_t type) {
 	ins->op0 = BRANCH_OP0;
 	ins->branch.type = type;
-	if (type = UNCOND) { // BRANCH UNCOND
+	if (type == UNCOND) { // BRANCH UNCOND
 		ins->branch.simm26 = get_offset(*addr, tl.operands[0], table); // offset 
 	} else { // BRANCH COND
 		ins->branch.cond_t.simm19 = s_ext(tl.operands[1], 19);
@@ -252,8 +257,8 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 		}
 	
 		// Reg offset: ldr rt, [xn, xm]
-		else if (tl.num_operands == 3 && 
-			&& !operand_starts_with(tl, 2, '#')) { 
+		else if ( (tl.num_operands == 3) && 
+			( !operand_starts_with(tl, 2, '#') )) { 
 			ins->load_store.mode = REG_OFFSET;
 			ins->load_store.sdt.xm = reg_index(tl.operands[2]);
 		}
@@ -289,41 +294,29 @@ static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instru
 }
 
 // array of function pointers
-op_func_ptr op_func_arr[] = {
-    [ADD] = &parseADD,
-	[ADDS] = &parseADDS,
-	[SUB] = &parseSUB,
-	[SUBS] = &parseSUBS,
-	[AND] = &parseAND,
-	[ANDS] = &parseANDS,
-	[BIC] = &parseBIC,
-	[BICS] = &parseBICS,
-	[EOR] = &parseEOR,
-	[EON] = &parseEON,
-	[ORR] = &parseORR,
-	[ORN] = &parseORN,
-	[MOVK] = &parseMOVK,
-	[MOVN] = &parseMOVN,
-	[MOVZ] = &parseMOVZ,
-	[MADD] = &parseMADD,
-	[MSUB] = &parseMSUB,
-	[B] = &parseB,
-	[BCOND] = &parseBCOND,
-	[LOAD_STORE] = &parseLS,
-	[INTDIR] = &parseINTDIR
+op_func_ptr op_func_arr[] = { 
+    [ADD] = parseADD,
+	[ADDS] = parseADDS,
+	[SUB] = parseSUB,
+	[SUBS] = parseSUBS,
+	[AND] = parseAND,
+	[ANDS] = parseANDS,
+	[BIC] = parseBIC,
+	[BICS] = parseBICS,
+	[EOR] = parseEOR,
+	[EON] = parseEON,
+	[ORR] = parseORR,
+	[ORN] = parseORN,
+	[MOVK] = parseMOVK,
+	[MOVN] = parseMOVN,
+	[MOVZ] = parseMOVZ,
+	[MADD] = parseMADD,
+	[MSUB] = parseMSUB,
+	[B] = parseB,
+	[BCOND] = parseBCOND,
+	[LOAD_STORE] = parseLS,
+	[INTDIR] = parseINTDIR
 };
 
-//Alias parsing helper functions
 
-//Shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
-void shift_all_ops(TokenisedLine *tl) {
-	for (int i = 0; i < tl->num_operands; i++) {
-		tl->operands[i] = tl->operands[i-1];
-	}
-} 
-//Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
-void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
-	tl->operands[set] = (tl->operands[check][0]) == 'x' ? "xzr" : "wzr";
-	tl->num_operands++;
-} 
 

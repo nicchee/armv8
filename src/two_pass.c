@@ -7,10 +7,9 @@
 #include "tokeniser.h"
 #include "bin_writer.h"
 #include "ins_parser.h"
-/*
 #include "asm-sdt.h"
 #include "asm-branch.h"
-#include "dpi_assembler.h" */
+#include "dpi_assembler.h" 
 
 //Helper function for second_pass() 
 //Binary encoding using functions in asm-branch, asm-sdt, dpi_assembler

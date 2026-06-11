@@ -76,63 +76,75 @@ static op_t get_op_t (TokenisedLine tl){
 	}
 }
 
-// Helper function to parse all aliases
+//Alias parsing helper functions
+
+//Shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
+void shift_all_ops(TokenisedLine *tl) {
+	for (int i = 0; i < tl->num_operands; i++) {
+		tl->operands[i] = tl->operands[i-1];
+	}
+} 
+//Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
+void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
+	tl->operands[set] = (tl->operands[check][0]) == 'x' ? "xzr" : "wzr";
+	tl->num_operands++;
+} 
+
+// Parse all aliases
 static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instruction_t ins) {
 	//cmp rn, <op2> -> subs rzr, rn, <op2>
 	if (strcmp(tl->opcode, "cmp") == 0) {
-		shift_all_ops(&tl);
-		set_op_to_rzr(&tl, 0, 1);
+		shift_all_ops(tl);
+		set_op_to_rzr(tl, 0, 1);
 		(*op_func_arr[SUBS]) (table, *tl, addr, ins);
 	}	
 	// cmn rn, <op2> -> adds rzr, rn, <op2>
 	else if (strcmp(tl->opcode, "cmn") == 0) {
-		shift_all_ops(&tl);
-		set_op_to_rzr(&tl, 0, 1);
+		shift_all_ops(tl);
+		set_op_to_rzr(tl, 0, 1);
 		(*op_func_arr[ADDS]) (table, *tl, addr, ins);
 	}	
 	// neg(s) rd, <op2> <-> sub(s) rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "neg") == 0) {
 		tl->operands[2] = tl->operands[1];
-		set_op_to_rzr(&tl, 1, 0);
+		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[SUB]) (table, *tl, addr, ins);
 	}
 	else if	(strcmp(tl->opcode, "negs") == 0) {
 		tl->operands[2] = tl->operands[1];
-		set_op_to_rzr(&tl, 1, 0);
+		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[SUBS]) (table, *tl, addr, ins);
 	}	
 	// tst rn, <op2> -> ands rzr, rn, <op2>
 	else if (strcmp(tl->opcode, "tst") == 0) {
-		shift_all_ops(&tl);
-		set_op_to_rzr(&tl, 0, 1);
+		shift_all_ops(tl);
+		set_op_to_rzr(tl, 0, 1);
 		(*op_func_arr[ANDS]) (table, *tl, addr, ins);
 	}	
 	// mvn rd, <op2> -> orn rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "mvn") == 0) {
 		tl->operands[2] = tl->operands[1];
-		set_op_to_rzr(&tl, 1, 0);
+		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[ORN]) (table, *tl, addr, ins);
 	}	
 	// mov rd, rm -> orr rd, rzr, rm
 	else if (strcmp(tl->opcode, "mov") == 0) {
 		tl->operands[2] = tl->operands[1];
-		set_op_to_rzr(&tl, 1, 0);
+		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[ORR]) (table, *tl, addr, ins);
 	}	
 	// mul rd, rn, rm -> madd rd, rn, rm, rzr
 	else if (strcmp(tl->opcode, "mul") == 0) {
-		set_op_to_rzr(&tl, 3, 0);
+		set_op_to_rzr(tl, 3, 0);
 		(*op_func_arr[MADD]) (table, *tl, addr, ins);
 	}	
 	// mneg rd, rn, rm -> msub rd, rn, rm, rzr 
 	// Get_op_t already checks that Alias is valid so must be mneg
 	else { 
-		set_op_to_rzr(&tl, 3, 0);			
+		set_op_to_rzr(tl, 3, 0);			
 		(*op_func_arr[MSUB]) (table, *tl, addr, ins);
 	}
 } 
-
-
 
 //parse(rawline, curraddr, ins, symtable)
 //	parse raw line to insert value into parts of the ins struct

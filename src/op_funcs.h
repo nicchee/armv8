@@ -2,6 +2,7 @@
 #define OP_FUNCS_H
 
 #include <stdint.h>
+#include "symtable.h"
 #include "tokeniser.h"
 #include "instruction.h"
 
