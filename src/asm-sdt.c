@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "instruction.h"
 #include "asm-sdt.h"
 
-/** @function: Assemble data for Single Data Transfer / Load Literal
- * @param: instruction 
+/** @function: Assemble data for Single Data Transfer / Load Literal into its binary representation
+ *  @param: instruction 
  */
 uint32_t assemble_load_store(instruction_t *instr) {
     switch (instr->load_store.mode) {
@@ -49,4 +50,6 @@ uint32_t assemble_load_store(instruction_t *instr) {
                 | instr->load_store.rt;
         }
     }
+    fprintf(stderr, "ERROR(assemble_load_store): Load or store doesn't work");
+    return EXIT_FAILURE;
 }
