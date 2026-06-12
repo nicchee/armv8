@@ -85,6 +85,7 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 
 	//Generate binary encoding and write to file
 	uint32_t result = assemble_bin(ins);
+	FILE *out = fopen(out_name, "wb");
 	bin_file_write(out_name, &result);	
 
 	free(ins);

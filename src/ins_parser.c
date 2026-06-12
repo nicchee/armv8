@@ -80,13 +80,17 @@ static op_t get_op_t (TokenisedLine tl){
 
 //Shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
 void shift_all_ops(TokenisedLine *tl) {
-	for (int i = 0; i < tl->num_operands; i++) {
-		tl->operands[i] = tl->operands[i-1];
+	for (int i = tl->num_operands; i > 0; i--) {
+		if (i < MAX_OPERANDS) {
+			tl->operands[i] = tl->operands[i-1];
+		}
 	}
+	tl->num_operands++;
 } 
 //Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
 void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
-	tl->operands[set] = (tl->operands[check][0]) == 'x' ? "xzr" : "wzr";
+	tl->operands[set] = (tl->operands[check][0]) == 'x' ? 
+		strdup("xzr") : strdup("wzr");
 	tl->num_operands++;
 } 
 
@@ -106,12 +110,12 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 	}	
 	// neg(s) rd, <op2> <-> sub(s) rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "neg") == 0) {
-		tl->operands[2] = tl->operands[1];
+		tl->operands[2] = strdup(tl->operands[1]);
 		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[SUB]) (table, *tl, addr, ins);
 	}
 	else if	(strcmp(tl->opcode, "negs") == 0) {
-		tl->operands[2] = tl->operands[1];
+		tl->operands[2] = strdup(tl->operands[1]);
 		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[SUBS]) (table, *tl, addr, ins);
 	}	
@@ -123,13 +127,13 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 	}	
 	// mvn rd, <op2> -> orn rd, rzr, <op2>
 	else if (strcmp(tl->opcode, "mvn") == 0) {
-		tl->operands[2] = tl->operands[1];
+		tl->operands[2] = strdup(tl->operands[1]);
 		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[ORN]) (table, *tl, addr, ins);
 	}	
 	// mov rd, rm -> orr rd, rzr, rm
 	else if (strcmp(tl->opcode, "mov") == 0) {
-		tl->operands[2] = tl->operands[1];
+		tl->operands[2] = strdup(tl->operands[1]);
 		set_op_to_rzr(tl, 1, 0);
 		(*op_func_arr[ORR]) (table, *tl, addr, ins);
 	}	
@@ -161,6 +165,7 @@ void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
 	op_t op = get_op_t(tl);
 
 	if (op == HALT) {
+		ins->int_dir.is_label = false;
 		ins->halt.halt_val = HALT_INS;
 		ins->op0 = HALT_OP0;
 	}
@@ -173,7 +178,8 @@ void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
 			(*op_func_arr[op]) (table, tl, addr, ins);
 		} else fprintf(stderr, "Function pointer in op_func_arr was null");
 	}
-
+	
+	free_tl(&tl);
 
 }
 

@@ -57,6 +57,7 @@ static void parse_dp (
 	int opr, 
 	int N
 ) {
+	ins->int_dir.is_label = false;
 	if (operand_starts_with(tl, 2, '#')) { // dpi imm
 		ins->op0 = DPI_OP0;
 		ins->dp_imm.sf = operand_starts_with(tl, 0, 'x');
@@ -148,6 +149,7 @@ static void parseMOVKNZ(
 	instruction_t ins, 
 	int opc
 ) {
+	ins->int_dir.is_label = false;
 	ins->op0 = DPI_OP0;
 	ins->dp_imm.sf = operand_starts_with(tl, 0, 'x');
 	ins->dp_imm.opc = opc;
@@ -170,6 +172,7 @@ static void parseMOVZ(symtable table, TokenisedLine tl, uint32_t *addr, instruct
 }
 
 static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x) {
+	ins->int_dir.is_label = false;
 	ins->op0 = DPR_OP0;
 	ins->dp_reg.rd = reg_index(tl.operands[0]);
 	ins->dp_reg.rn = reg_index(tl.operands[1]);
@@ -191,6 +194,7 @@ static void parseMSUB(symtable table, TokenisedLine tl, uint32_t *addr, instruct
 }
 
 static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins, branch_type_t type) {
+	ins->int_dir.is_label = false;
 	ins->op0 = BRANCH_OP0;
 	ins->branch.type = type;
 	if (type == UNCOND) { // BRANCH UNCOND
@@ -225,6 +229,7 @@ static void parseBCOND(symtable table, TokenisedLine tl, uint32_t *addr, instruc
 }
 
 static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
+	ins->int_dir.is_label = false;
 	ins->op0 = LOAD_STORE_OP0;
 	ins->load_store.rt = reg_index(tl.operands[0]);
 	ins->load_store.sf = operand_starts_with(tl, 0, 'x');
