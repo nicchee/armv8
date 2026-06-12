@@ -10,7 +10,7 @@
 uint32_t assemble_load_store(instruction_t *instr) {
     switch (instr->load_store.mode) {
         case LIT_LOAD: {
-            uint32_t imm19 = instr->load_store.simm19 & 0x7FFFF;
+            uint32_t imm19 = mask_n_bits(instr->load_store.simm19, 19);
             return (instr->load_store.sf << 30)
                 | (0x18 << 24)
                 | (imm19 << 5)
@@ -19,23 +19,23 @@ uint32_t assemble_load_store(instruction_t *instr) {
 
         case UNSIGNED_OFFSET: {
             return (instr->load_store.sf << 30)
-                | (0xB8 << 31)
+                | (0xB8 << 24)
                 | (instr->load_store.sdt.unsigned_offset.U << 24)
                 | (instr->load_store.sdt.L << 22)
-                | (instr->load_store.sdt.unsigned_offset.imm12 << 21)
-                | (instr->load_store.sdt.xn << 9)
+                | (instr->load_store.sdt.unsigned_offset.imm12 << 10)
+                | (instr->load_store.sdt.xn << 5)
                 | instr->load_store.rt;
         }
 
         case PRE_POST_INDEX: {
+            uint32_t imm9 = mask_n_bits(instr->load_store.sdt.pre_post_index.simm9, 9);
             return (instr->load_store.sf << 30)
-                | (0xB8 << 31)
-                | (instr->load_store.sdt.unsigned_offset.U << 24)
+                | (0xB8 << 24)
                 | (instr->load_store.sdt.L << 22)
-                | (instr->load_store.sdt.pre_post_index.simm9 << 20)
+                | (imm9 << 12)
                 | (instr->load_store.sdt.pre_post_index.I << 11)
                 | (0x1 << 10)
-                | (instr->load_store.sdt.xn << 9)
+                | (instr->load_store.sdt.xn << 5)
                 | instr->load_store.rt;
         }
 
@@ -45,11 +45,20 @@ uint32_t assemble_load_store(instruction_t *instr) {
                 | (instr->load_store.sdt.unsigned_offset.U << 24)
                 | (instr->load_store.sdt.L << 22)
                 | (0x81A << 21)
-                | (instr->load_store.sdt.xm << 20)
-                | (instr->load_store.sdt.xn << 9)
+                | (instr->load_store.sdt.xm << 16)
+                | (instr->load_store.sdt.xn << 5)
                 | instr->load_store.rt;
         }
     }
     fprintf(stderr, "ERROR(assemble_load_store): Load or store doesn't work");
     return EXIT_FAILURE;
+}
+
+// helper
+
+/* Truncate a signed value to its low 'bits' bits, ready for embedding
+ * in an instruction field. The decoder will sign-extend back.
+ */
+extern uint32_t mask_n_bits(int32_t value, unsigned n) {
+    return (uint32_t)value & ((1u << n) - 1);
 }
