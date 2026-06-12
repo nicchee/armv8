@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 	second_pass(in, table, argv[2]);
 
 	free_table(table);
+	table = NULL;
 
 	return EXIT_SUCCESS;
 }

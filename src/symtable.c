@@ -32,9 +32,12 @@ symtable init_table(void) {
 //Free memory
 void free_table(symtable table) {
 	if (table != NULL) {
+		if (table->entries != NULL) {
+			free(table->entries);
+			table->entries = NULL;
+		}
 		free(table);
-		table = NULL;
-	}
+	}	
 }
 
 //bool success = insert_symkv(table, s, address);

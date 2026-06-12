@@ -73,7 +73,6 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
     while (fgets(line, sizeof(line), in) != NULL) {
 	if (*line == '\n') { continue; } //empty line
 	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
-	//TokenisedLine tl = tokenise(line);
 	
 	//Replace any labels with address from symtable 
 	instruction_t ins = malloc(sizeof(struct instruction_t));
@@ -88,8 +87,8 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	uint32_t result = assemble_bin(ins);
 	bin_file_write(out_name, &result);	
 
-	//free_tl(&tl);
 	free(ins);
+	ins = NULL;
 	}
     fclose(in);
 }
