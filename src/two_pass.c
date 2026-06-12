@@ -20,9 +20,9 @@ static uint32_t assemble_bin(instruction_t ins) {
 	    	case DPR_OP0:
 			return dpi_reg_assembler(ins);
 		case BRANCH_OP0:
-			return assemble_load_store(ins);
-		case LOAD_STORE_OP0:
 			return assemble_branch(ins);
+		case LOAD_STORE_OP0:
+			return assemble_load_store(ins);
 		case HALT_OP0:
 			return HALT_INS;
 		case INTDIR_OP0:
@@ -70,6 +70,12 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
     uint32_t currAddr = 0;
     rewind(in);
 
+    FILE *out = fopen(out_name, "wb");
+    if (out == NULL) {
+	fprintf(stderr, "Error opening bin file");
+	exit(EXIT_FAILURE);
+    }
+
     while (fgets(line, sizeof(line), in) != NULL) {
 	if (*line == '\n') { continue; } //empty line
 	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
@@ -85,8 +91,7 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 
 	//Generate binary encoding and write to file
 	uint32_t result = assemble_bin(ins);
-	FILE *out = fopen(out_name, "wb");
-	bin_file_write(out_name, &result);	
+	bin_file_write(out, &result);	
 
 	free(ins);
 	ins = NULL;
