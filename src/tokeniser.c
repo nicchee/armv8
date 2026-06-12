@@ -6,20 +6,12 @@ static TokenisedLine init_tokenised_line( void );
 
 TokenisedLine tokenise(char *line) {
 	TokenisedLine result = init_tokenised_line();
-	/*
-	// clean comments
-	char *commentptr = strstr(line, "//");
-	if (commentptr != NULL) {
-		*commentptr = '\0';
-	}
-	*/
 
 	// check for label
 	char *colonptr = strchr(line, ':');
 	if (colonptr != NULL) {
 		*colonptr = '\0';
 		result.label = strdup(line);
-		// store in symbol table?
 		return result;
 	}
 

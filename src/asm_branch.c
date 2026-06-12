@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include "instruction.h"
 
-uint32_t assemble_branch(instruction_t *instr) {
+static uint32_t mask_n_bits(int32_t value, unsigned int bits);
+
+uint32_t assemble_branch(instruction_t instr) {
     switch (instr->branch.type) {
 
         case UNCOND: {
@@ -29,6 +31,6 @@ uint32_t assemble_branch(instruction_t *instr) {
 /* Truncate a signed value to its low 'bits' bits, ready for embedding
  * in an instruction field. The decoder will sign-extend back.
  */
-extern uint32_t mask_n_bits(int32_t value, unsigned bits) {
+static uint32_t mask_n_bits(int32_t value, unsigned bits) {
     return (uint32_t)value & ((1u << bits) - 1);
 }

@@ -12,7 +12,7 @@
 // Instruction
 static void bin_file_load(uint8_t *memory, const char *fileName);
 static uint32_t fetch(mstate_t *mstate_p);
-static void decode_execute(uint32_t ins, mstate_t *mstate_p, instruction_t *insp);
+static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 
 #define SHIFT_OP0 25
 #define MASK1110 14
@@ -32,7 +32,6 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	} 
 	mstate_t mState;
-	instruction_t instruction;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);
 	while (true) {
@@ -54,7 +53,7 @@ int main(int argc, char **argv) {
 			}
 			break;
 		} else {
-			decode_execute(ins, &mState, &instruction);
+			decode_execute(ins, &mState);
 		}
 	}
 	free_state(&mState);
@@ -62,16 +61,16 @@ int main(int argc, char **argv) {
 }
 
 // Decode and execute stage - skeleton
-static void decode_execute(uint32_t ins, mstate_t *mstate_p, instruction_t *insp) {
-	insp->op0 = ins >> SHIFT_OP0;
+static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
+	uint32_t op0 = ins >> SHIFT_OP0;
 
-	if ((insp->op0 & MASK1110) == DPI_IMM) { // checks 100x
+	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
 		dpi_imm(ins, mstate_p);
-	} else if ((insp->op0 & MASK0111) == DPI_REG) { // checks x101 
+	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
 		dpi_reg(ins, mstate_p);
-	} else if ((insp->op0 & MASK0101) == LOADSTORE) { // checks x1x0
+	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
 		single_data_transfer(ins, mstate_p);
-	} else if ((insp->op0 & MASK1110) == BRANCH) { // checks 101x
+	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
 		branch(ins , mstate_p);
 	} else {
 		exit (EXIT_FAILURE);

@@ -8,6 +8,7 @@
 #define MASK0111 7
 #define DPI_IMM 8
 #define DPI_REG 5
+#define SHIFT_OP0 25
 
 // Data Processing Instruction Immediate + Register
 // Position of each instruction part
@@ -37,7 +38,6 @@
 
 // Arithmetic and Logical
 #define ARITH_OPR_MASK 9
-#define ARITH_OPR 8
 #define ARITH_BL_M 0
 #define SHIFT_NEGATED 21
 #define SHIFT_SHIFT 22
@@ -51,21 +51,7 @@
 #define SHIFT_RA 10
 #define SHIFT_X 15
 
-static uint32_t dpi_imm_assembler(instruction_t *insp);
-static uint32_t dpi_reg_assembler(instruction_t *insp);
-
-uint32_t dpi_assembler(instruction_t *insp) {
-    uint32_t machine_code = 0;
-    if ((insp->op0 & MASK1110) == DPI_IMM) { // checks 100x
-		return dpi_imm_assembler(insp);
-	} else if ((insp->op0 & MASK0111) == DPI_REG) { // checks x101 
-		return dpi_reg_assembler(insp);
-    } else {
-        exit(EXIT_FAILURE);
-    }    
-}
-
-static uint32_t dpi_imm_assembler(instruction_t *insp) {
+uint32_t dpi_imm_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_imm.sf << SHIFT_SF;
     machine_code |= insp->dp_imm.opc << SHIFT_OPC;
@@ -85,7 +71,7 @@ static uint32_t dpi_imm_assembler(instruction_t *insp) {
     return machine_code;
 }
 
-static uint32_t dpi_reg_assembler(instruction_t *insp) {
+uint32_t dpi_reg_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_reg.sf << SHIFT_SF;
     machine_code |= insp->dp_reg.opc << SHIFT_OPC;

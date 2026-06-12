@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 // Writes a binary num to given bin file
-void bin_file_write(const char *fileName, uint32_t bin) {
+void bin_file_write(const char *fileName, uint32_t *bin) {
 	FILE *in = fopen(fileName, "wb");
 	if (in == NULL)  {
 		fprintf(stderr, "Error opening bin file\n");

@@ -7,8 +7,8 @@
 #include "tokeniser.h"
 #include "bin_writer.h"
 #include "ins_parser.h"
-#include "asm-sdt.h"
-#include "asm-branch.h"
+#include "asm_sdt.h"
+#include "asm_branch.h"
 #include "dpi_assembler.h" 
 
 //Helper function for second_pass() 
@@ -16,9 +16,9 @@
 static uint32_t assemble_bin(instruction_t ins) {
 	switch (ins->op0) {
 	    	case DPI_OP0:
-			return dp_imm_assembler(ins);
+			return dpi_imm_assembler(ins);
 	    	case DPR_OP0:
-			return dp_reg_assembler(ins);
+			return dpi_reg_assembler(ins);
 		case BRANCH_OP0:
 			return assemble_load_store(ins);
 		case LOAD_STORE_OP0:
@@ -77,7 +77,7 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	
 	//Replace any labels with address from symtable 
 	instruction_t ins = malloc(sizeof(struct instruction_t));
-	parse(line, currAddr, ins, table);
+	parse(line, &currAddr, ins, table);
 	if (ins->int_dir.is_label) {
 		ins->int_dir.int_val = get_addr(table, ins->int_dir.label);
 		free(ins->int_dir.label);
@@ -85,11 +85,11 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	}
 
 	//Generate binary encoding and write to file
-	bin_file_write(out_name, assemble_bin(ins));	
-		
+	uint32_t result = assemble_bin(ins);
+	bin_file_write(out_name, &result);	
+
+	free_tl(&tl);
 	free(ins);
-	free(&tl);
 	}
     fclose(in);
 }
-

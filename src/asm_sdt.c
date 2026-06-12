@@ -2,12 +2,14 @@
 #include <string.h>
 #include <stdio.h>
 #include "instruction.h"
-#include "asm-sdt.h"
+#include "asm_sdt.h"
+
+static uint32_t mask_n_bits(int32_t value, unsigned n);
 
 /** @function: Assemble data for Single Data Transfer / Load Literal into its binary representation
  *  @param: instruction 
  */
-uint32_t assemble_load_store(instruction_t *instr) {
+uint32_t assemble_load_store(instruction_t instr) {
     switch (instr->load_store.mode) {
         case LIT_LOAD: {
             uint32_t imm19 = mask_n_bits(instr->load_store.simm19, 19);
@@ -41,10 +43,10 @@ uint32_t assemble_load_store(instruction_t *instr) {
 
         case REG_OFFSET: {
             return (instr->load_store.sf << 30)
-                | (0xB8 << 31)
+                | (0xB8 << 24)
                 | (instr->load_store.sdt.unsigned_offset.U << 24)
                 | (instr->load_store.sdt.L << 22)
-                | (0x81A << 21)
+                | (0x81A << 20)
                 | (instr->load_store.sdt.xm << 16)
                 | (instr->load_store.sdt.xn << 5)
                 | instr->load_store.rt;
@@ -59,6 +61,6 @@ uint32_t assemble_load_store(instruction_t *instr) {
 /* Truncate a signed value to its low 'bits' bits, ready for embedding
  * in an instruction field. The decoder will sign-extend back.
  */
-extern uint32_t mask_n_bits(int32_t value, unsigned n) {
+static uint32_t mask_n_bits(int32_t value, unsigned n) {
     return (uint32_t)value & ((1u << n) - 1);
 }
