@@ -33,6 +33,7 @@ symtable init_table(void) {
 void free_table(symtable table) {
 	if (table != NULL) {
 		free(table);
+		table = NULL;
 	}
 }
 
