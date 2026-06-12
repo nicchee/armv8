@@ -3,66 +3,83 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <assert.h>
+
+bool null_terminated(char *s, int max) {
+	for (int i = 0; i < max; i++) {
+		if (s[i] == '\0') { return true; }
+	}
+	return false;
+}
 
 //Create symbol table, return pointer
-symtable_t* init_table(void) {
-	symtable_t* table = malloc(sizeof(symtable_t));
-	if (table != NULL) {
-		table->count = 0;
-	} else {
-		fprintf(stderr, "Symbol table pointer was null");
+symtable init_table(void) {
+	symtable table = malloc(sizeof(struct symtable));
+	if (table == NULL) { 
+		fprintf(stderr, "Symbol table malloc failed\n");
+		exit(EXIT_FAILURE);
+	}
+	table->cap = INITIAL_MAX_SYMTABLE_SIZE;
+	table->count = 0;
+	table->entries = malloc(table->cap * sizeof(symkv_t));
+	if (table->entries == NULL) { 
+		fprintf(stderr, "Symbol table entries malloc failed\n");
+		exit(EXIT_FAILURE);
 	}
 	return table;
 }
 
 //Free memory
-void free_table(symtable_t* table) {
+void free_table(symtable table) {
 	if (table != NULL) {
 		free(table);
 	}
 }
 
-//Insert symbol and address into table
-bool insert_symkv(symtable_t* table, sym_t* s, uint32_t address) {
-	//Check if pointers are NULL
-	if (table == NULL || s == NULL) {
-		fprintf(stderr, "Null pointer");
-		return false;
-	}
-	//Check if sym table is full
-	if (table->count >= MAX_SYMTABLE_SIZE) {
-		fprintf(stderr, "Symbol table is full");
-		return false;
+//bool success = insert_symkv(table, s, address);
+//	Insert symbol and address into table
+bool insert_symkv(symtable table, sym_t s, uint32_t address) {
+	// check pointers are NOT NULL
+	assert(table != NULL && s != NULL);
+
+	// check s is NULL terminated
+	assert(null_terminated(s, MAX_SYM_LEN));
+
+	// Grow if table is full
+	if (table->count >= table->cap) {
+		table->cap += 100;
+		table->entries = realloc(table->entries, table->cap * sizeof(symkv_t));
 	}	
 
-	//Check if symbol alr in table - linear search
+	//Check if symbol already in table - linear search
 	for (int i = 0; i < table->count; i++) {
-		if (strcmp((const char*) s, table->entries[i].symbol) == 0) {
-			fprintf(stderr, "Duplicate symbol definition");
+		if (strcmp( s, table->entries[i].symbol) == 0) {
+			fprintf(stderr, "Duplicate symbol definition\n");
 			return false;
 		}
 	}
+
 	//Symbol not in table -> insert entry
 	int currIndex = table->count;
 	//Prevent buffer overrun, check if s is too long for buffer
-	if (strlen(*s) > (MAX_SYM_LEN - 1) ) {
-		fprintf(stderr, "Symbol too long to fit in buffer");
+	if (strlen(s) > (MAX_SYM_LEN - 1) ) {
+		fprintf(stderr, "Symbol too long to fit in buffer\n");
 		return false;
 	}
+
 	// s and its null terminator will fit in buffer so can strncpy safely and return
-	strncpy(table->entries[currIndex].symbol, (const char*) s, MAX_SYM_LEN);
+	strcpy(table->entries[currIndex].symbol, s);
 	table->entries[currIndex].addr = address;
-	(table->count)++;
+	table->count++;
 	return true;
 }
 
 //Lookup symbol in table, return address
-uint32_t get_addr(symtable_t *table, sym_t s) {
-	int currIndex = table->count;
+uint32_t get_addr(symtable table, sym_t s) {
+	//int currIndex = table->count; - if no bug then delete
 	for (int i = 0; i < table->count; i++) {
-		if (strcmp((const char*) s, table->entries[currIndex].symbol) == 0) {
-			return table->entries[currIndex].addr;
+		if (strcmp(s, table->entries[i].symbol) == 0) {
+			return table->entries[i].addr;
 		}
 	}
 	fprintf(stderr, "Couldn't find symbol in table");

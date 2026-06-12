@@ -1,11 +1,18 @@
-#include<string.h>
-
+#include <string.h>
+#include <stdlib.h>
 #include "tokeniser.h"
 
 static TokenisedLine init_tokenised_line( void );
 
 TokenisedLine tokenise(char *line) {
 	TokenisedLine result = init_tokenised_line();
+	/*
+	// clean comments
+	char *commentptr = strstr(line, "//");
+	if (commentptr != NULL) {
+		*commentptr = '\0';
+	}
+	*/
 
 	// check for label
 	char *colonptr = strchr(line, ':');
@@ -29,7 +36,7 @@ TokenisedLine tokenise(char *line) {
 	char *start = saveptr;
 	int depth = 0;
 	while (*start == ' ') { start++; }
-	for (char *p = start; *p != '\n'; p++) {
+	for (char *p = start;;p++) {
 		if (result.num_operands >= MAX_OPERANDS) { break; }
 		if (*p == '[') { depth++; }
 		if (*p == ']') { depth--; }
@@ -51,6 +58,19 @@ TokenisedLine tokenise(char *line) {
 	}
 	
 	return result;
+}
+
+
+void free_tl(TokenisedLine *tl) {
+	if (tl == NULL) return;
+	free(tl->label);
+	free (tl->opcode);
+	for (int i = 0; i < tl->num_operands; i++) {
+		free (tl->operands[i]);
+		tl->operands[i] = NULL;
+	}
+	tl->label = NULL;
+	tl->opcode = NULL;
 }
 
 static TokenisedLine init_tokenised_line( void ) {
