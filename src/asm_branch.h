@@ -1,0 +1,1 @@
+static uint32_t mask_n_bits(int32_t value, unsigned int bits);
