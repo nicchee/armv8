@@ -41,7 +41,7 @@ void first_pass(FILE *in, symtable table) {
     while (fgets(line, sizeof(line), in) != NULL) {
 		if (*line == '\n') { continue; } //empty line
 		line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
-		if (strlen(line) > 0 && !feof(in)) {
+		if (strlen(line) > (MAX_LINE_LEN-1) && !feof(in)) {
 			fprintf(stderr, "Line longer than max length of %d, not passed to parser\n", MAX_LINE_LEN-1);
 			fclose(in);
 			exit(EXIT_FAILURE);
