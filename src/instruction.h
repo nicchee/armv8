@@ -45,7 +45,7 @@ typedef struct {
 
 	// Single Data Transfer
         struct {
-            uint8_t rt; 
+            uint8_t rt;
 	    	uint32_t sf;
 	    	sdt_mode_t mode;
 

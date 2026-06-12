@@ -9,7 +9,7 @@ CFLAGS  ?= -std=c17 -g\
 
 all: assemble emulate
 
-assemble: assemble.o tokeniser.o dpi_assembler.o asm_branch.o
+assemble: assemble.o tokeniser.o dpi_assembler.o asm_branch.o asm_sdt.o
 
 emulate: emulate.o single_data_transfer.o dpi.o branch.o machine_state.o
 
@@ -22,6 +22,7 @@ machine_state.o: machine_state.c machine_state.h
 tokeniser.o: tokeniser.c tokeniser.h
 dpi_assembler.o: dpi_assembler.c dpi_assembler.h
 asm_branch.o: asm_branch.c asm_branch.h
+asm_sdt.o: asm_sdt.c asm_sdt.h
 
 clean:
 	$(RM) *.o assemble emulate

@@ -9,11 +9,11 @@
 
 // Mask
 #define MASKUNCONDOP 0xfc000000
-#define MASKREGOP    0xfffffc1f
-#define MASKCONDOP   0xff000000
+#define MASKREGOP    0xffff0000
+#define MASKCONDOP   0xfc000000
 
 // Bit code
-#define UNCONDOP  0x14000000 
+#define UNCONDOP  0x14000000
 #define REGOP     0xd61f0000
 #define CONDOP    0x54000000
 
@@ -23,7 +23,7 @@
 #define SHIFT_COND 0
 #define SHIFT_SIMM19 5
 
-// Operand size
+// Operand size or Width
 #define SIMM26_SIZE 26
 #define REG_SIZE 5 // Move this to Mstate or something. everyone need this
 #define SIMM19_SIZE 19
@@ -47,18 +47,26 @@ static int check_cond(int cond, pstate_t pstate);
 void branch(uint32_t instruction, mstate_t *state){
     if ((instruction & MASKUNCONDOP) == UNCONDOP) {
         int32_t simm26 = (instruction >> SHIFT_SIMM26) & MASK(SIMM26_SIZE);
+	    simm26 = (simm26 << 6) >> 6; // shift left by 6 to push bit 25 to bit 31, then asr by 6 to copy bit 31 to upper slots
         state->pc += (int64_t)(simm26) * INSTR_SIZE; // PC = PC + simm26
     } else if ((instruction & MASKREGOP) == REGOP) {
-        state->pc = state->regs[(instruction >> SHIFT_XN) & MASK(REG_SIZE)]; // PC = Xn
+        int xn = (instruction >> SHIFT_XN) & MASK(REG_SIZE);
+        if (xn == REG32) { // encodes XZR
+            pc_inc(state);
+            return;
+        } 
+        state->pc = state->regs[xn]; // PC = Xn
     } else if ((instruction & MASKCONDOP) == CONDOP) {
-        int cond = (instruction >> SHIFT_SIMM26) & MASK(COND_SIZE);
+        int cond = (instruction >> SHIFT_COND) & MASK(COND_SIZE);
         int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(SIMM19_SIZE);
+	    simm19 = (simm19 << 13) >> 13; // shift left by 13 to push bit 18 to bit 31, then asr by 6 to copy bit 31 to upper slots
         int branch_cond = check_cond(cond, state->ps);
         switch (branch_cond) {
             case -1: 
                 fprintf(stderr, "Error: Instruction not recognised for any branch operation.\n");
                 exit(EXIT_FAILURE); // not recognised branch operation
-            case 0: 
+            case 0:
+		        pc_inc(state); 
                 return; // does not satisfies cond
             case 1: 
                 state->pc += (int64_t)(simm19) * INSTR_SIZE; // PC = PC + simm19
@@ -75,7 +83,7 @@ void branch(uint32_t instruction, mstate_t *state){
 /**
  * branch_cond = check_cond(cond, pstate);
  *  check if condition is true to branch
- *  @return 1 if true, 0 if false, -1 if cond not recognised
+ *  return 1 if true, 0 if false, -1 if cond not recognised
 */
 static int check_cond(int cond, pstate_t pstate) { 
     switch (cond) {
