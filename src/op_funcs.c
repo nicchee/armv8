@@ -306,7 +306,6 @@ static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instru
 		ins->int_dir.int_val = 0;
 		ins->int_dir.label = strdup(tl.operands[0]);
 	}
-	*addr += 4; //.int directive always takes up 4 bytes of memory
 }
 
 // array of function pointers

@@ -79,7 +79,7 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
 	
 	//Replace any labels with address from symtable 
-	instruction_t ins = calloc(1, sizeof(struct instruction_t));
+	instruction_t ins = malloc(sizeof(struct instruction_t));
 	parse(line, &currAddr, ins, table);
 	if (ins->op0 == EMPTY_SKIP_OP0) continue;
 
@@ -92,6 +92,7 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	//Generate binary encoding and write to file
 	uint32_t result = assemble_bin(ins);
 	bin_file_write(out, &result);	
+	currAddr += 4;
 
 	free(ins);
 	ins = NULL;
