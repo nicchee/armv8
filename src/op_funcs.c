@@ -285,6 +285,7 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 } //end of parseLS 
 
 static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	ins->op0 = INTDIR_OP0;
 	if (isdigit(tl.operands[0][0]) || 
 	tl.operands[0][0] == '-') { //number
 		ins->int_dir.is_label = false;
