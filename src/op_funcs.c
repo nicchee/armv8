@@ -49,7 +49,7 @@ static uint32_t z_ext(char *imm) {
 static int32_t get_offset(uint32_t curraddr, char *lit, symtable table) {
 	int32_t targetaddr = (*lit == '#') ? // first character of literal is # (immediate value)
 			s_ext(lit, 26) : get_addr(table, lit);
-	
+
 	return (targetaddr - curraddr) / 4;
 }
 
@@ -168,7 +168,14 @@ static void parseMOVKNZ(
 	ins->dp_imm.opc = opc;
 	ins->dp_imm.opi = WIDE_OPI;
 	ins->dp_imm.rd = reg_index(tl.operands[0]);
-	ins->dp_imm.wide.hw = tl.num_operands == 4 ? z_ext(tl.operands[3]) / 16 : 0;
+
+	if (tl.num_operands == 3) {
+		// if operands[2] is something like "lsl #16"
+		char *imm = strchr(tl.operands[2], '#');
+		ins->dp_imm.wide.hw = imm ? (z_ext(imm) / 16) : 0;
+	} else {
+		ins->dp_imm.wide.hw = 0;
+	}
 	ins->dp_imm.wide.imm16 = z_ext(tl.operands[1]);
 }
 
