@@ -1,5 +1,3 @@
-#define MEMSIZE (2*1024*1024)
-
 // Masking function - generate the mask bits required
 #define MASK(x) ((1U << (x)) - 1)
 
@@ -65,6 +63,7 @@ void free_state(mstate_t *mstate_p) {
 */
 bool check_addr(uint64_t addr, int num_bytes) {
 	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+		fprintf(stderr, "%lx-%lx=memory\n", addr, addr + num_bytes);
 		fprintf(stderr, "Memory address out of bound!\n");
 		return false;
 	}
