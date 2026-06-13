@@ -80,6 +80,8 @@ uint32_t dpi_reg_assembler(instruction_t insp) {
     machine_code |= insp->dp_reg.rn << SHIFT_RN;
     machine_code |= insp->dp_reg.rm << SHIFT_RM;
     if (insp->dp_reg.M == ARITH_BL_M) {
+        machine_code |= insp->dp_reg.arith_logic.shift << SHIFT_SHIFT;
+        machine_code |= insp->dp_reg.arith_logic.N << SHIFT_NEGATED;
         machine_code |= insp->dp_reg.arith_logic.imm6 << SHIFT_OPERAND;
     } else {
         machine_code |= insp->dp_reg.mul.x << SHIFT_X;

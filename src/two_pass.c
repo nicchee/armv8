@@ -76,16 +76,16 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
     }
 
     while (fgets(line, sizeof(line), in) != NULL) {
-	if (*line == '\n') { continue; } //empty line
-	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
-	
-	//Replace any labels with address from symtable 
-	instruction_t ins = malloc(sizeof(struct instruction_t));
-	parse(line, &currAddr, ins, table);
-	if (ins->int_dir.is_label) {
-		ins->int_dir.int_val = get_addr(table, ins->int_dir.label);
-		free(ins->int_dir.label);
-		ins->int_dir.label = NULL;
+		if (*line == '\n') { continue; } //empty line
+		line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
+
+		//Replace any labels with address from symtable 
+		instruction_t ins = calloc(1, sizeof(struct instruction_t));
+		parse(line, &currAddr, ins, table);
+		if (ins->int_dir.is_label && ins->op0 == INTDIR_OP0) {
+			ins->int_dir.int_val = get_addr(table, ins->int_dir.label);
+			free(ins->int_dir.label);
+			ins->int_dir.label = NULL;
 	}
 
 	//Generate binary encoding and write to file

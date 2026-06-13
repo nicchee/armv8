@@ -27,7 +27,7 @@ static uint8_t reg_index(char *reg) {
 
 //	sign extend an immediate value that takes the form of "#_"
 static int32_t s_ext(char *imm, int bits) {
-	int imm_val = atoi(imm + 1);
+	int imm_val = strtol(imm + 1, NULL, 0);
 	int shift = 32 - bits;
 
 	//shift value to MSB
@@ -38,7 +38,7 @@ static int32_t s_ext(char *imm, int bits) {
 
 //	zero extend an immediate value that takes the form of "#_"
 static uint32_t z_ext(char *imm) {
-	int imm_val = atoi(imm + 1); //remove '#'
+	int imm_val = strtol(imm + 1, NULL, 0); //remove '#'
 
 	return 0xffff & imm_val;
 }
@@ -65,7 +65,7 @@ static void parse_dp (
 		ins->dp_imm.opi = ARITH_OPI;
 		ins->dp_imm.rd = reg_index(tl.operands[0]);
 		ins->dp_imm.arith.rn = reg_index(tl.operands[1]);
-		ins->dp_imm.arith.sh = tl.num_operands == 5 && (compare_string(tl.operands[4], "#12"));  // sh == 1 (lsl imm by 12)
+		ins->dp_imm.arith.sh = tl.num_operands == 4 && (strstr(tl.operands[3], "lsl #12") != NULL);  // sh == 1 (lsl imm by 12)
 		ins->dp_imm.arith.imm12 = z_ext(tl.operands[2]);
 	} else { // dpi reg 
 		ins->op0 = DPR_OP0;
@@ -76,17 +76,27 @@ static void parse_dp (
 		ins->dp_reg.opc = opc;
 		ins->dp_reg.M = 0; // arith AND logic both uses 0
 		ins->dp_reg.opr = opr;
-		if (tl.num_operands == 5) { //shift 
-			if (strcmp(tl.operands[3], "lsl") == 0) {
+		if (tl.num_operands == 4) {  //shift
+			char *shift_str = tl.operands[3];
+			char * space = strchr(shift_str, ' ');
+			if (space != NULL) {
+				*space = '\0';
+				char *imm_str = space + 1;
+				while (*imm_str == ' ') imm_str++; 
+				if (strcmp(shift_str, "lsl") == 0) { 
+					ins->dp_reg.arith_logic.shift = LSL_SHIFT;
+				} else if (strcmp(shift_str, "lsr") == 0) {
+					ins->dp_reg.arith_logic.shift = LSR_SHIFT;
+				} else { // asr
+					ins->dp_reg.arith_logic.shift = ASR_SHIFT;
+				}
+				ins->dp_reg.arith_logic.imm6 = z_ext(imm_str);
+			} else {
 				ins->dp_reg.arith_logic.shift = LSL_SHIFT;
-			} else if (strcmp(tl.operands[3], "lsr") == 0) {
-				ins->dp_reg.arith_logic.shift = LSR_SHIFT;
-			} else { // asr
-				ins->dp_reg.arith_logic.shift = ASR_SHIFT;
+				ins->dp_reg.arith_logic.imm6 = 0;
 			}
-			ins->dp_reg.arith_logic.imm6 = z_ext(tl.operands[4]);
 		} else {
-			// no shift 
+			// 3 operands - no shift 
 			ins->dp_reg.arith_logic.shift = LSL_SHIFT;
 			ins->dp_reg.arith_logic.imm6 = 0;
 		}
