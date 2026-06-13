@@ -19,6 +19,8 @@ static uint32_t assemble_bin(instruction_t ins) {
 			return dpi_imm_assembler(ins);
 	    	case DPR_OP0:
 			return dpi_reg_assembler(ins);
+		case DPR_MUL_OP0:
+			return dpi_reg_assembler(ins);
 		case BRANCH_OP0:
 			return assemble_branch(ins);
 		case LOAD_STORE_OP0:

@@ -195,7 +195,7 @@ static void parseMOVZ(symtable table, TokenisedLine tl, uint32_t *addr, instruct
 
 static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x) {
 	ins->int_dir.is_label = false;
-	ins->op0 = DPR_OP0;
+	ins->op0 = DPR_MUL_OP0;
 	ins->dp_reg.rd = reg_index(tl.operands[0]);
 	ins->dp_reg.rn = reg_index(tl.operands[1]);
 	ins->dp_reg.rm = reg_index(tl.operands[2]);
