@@ -90,6 +90,8 @@ static void parse_dp (
 					ins->dp_reg.arith_logic.shift = LSL_SHIFT;
 				} else if (strcmp(shift_str, "lsr") == 0) {
 					ins->dp_reg.arith_logic.shift = LSR_SHIFT;
+				} else if (strcmp(shift_str, "ror") == 0) {
+					ins->dp_reg.arith_logic.shift = ROR_SHIFT;
 				} else { // asr
 					ins->dp_reg.arith_logic.shift = ASR_SHIFT;
 				}

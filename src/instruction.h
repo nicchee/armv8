@@ -53,6 +53,7 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define LSL_SHIFT 0	// 00
 #define LSR_SHIFT 1	// 01
 #define ASR_SHIFT 2	// 10
+#define ROR_SHIFT 3     // 11
 #define RSR_SHIFT 3	// 11 (ONLY FOR LOGICAL)
 
 // BRANCH COND
