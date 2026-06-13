@@ -26,5 +26,6 @@ int main(int argc, char **argv) {
 	free_table(table);
 	table = NULL;
 
+	fclose(in);
 	return EXIT_SUCCESS;
 }

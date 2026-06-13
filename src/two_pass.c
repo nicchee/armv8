@@ -61,7 +61,6 @@ void first_pass(FILE *in, symtable table) {
 		currAddr += 4;
 		free_tl(&tl);	
 	}
-	fclose(in);
 }
 
 // Second pass generates uint32_t binary number and writes to out file
@@ -96,5 +95,4 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	free(ins);
 	ins = NULL;
 	}
-    fclose(in);
 }
