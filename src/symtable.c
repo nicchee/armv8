@@ -80,7 +80,6 @@ bool insert_symkv(symtable table, sym_t s, uint32_t address) {
 
 //Lookup symbol in table, return address
 uint32_t get_addr(symtable table, sym_t s) {
-	//int currIndex = table->count; - if no bug then delete
 	for (int i = 0; i < table->count; i++) {
 		if (strcmp(s, table->entries[i].symbol) == 0) {
 			return table->entries[i].addr;

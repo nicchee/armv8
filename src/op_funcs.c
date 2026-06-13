@@ -250,6 +250,13 @@ static void parseBCOND(symtable table, TokenisedLine tl, uint32_t *addr, instruc
 	parse_B_COND(table, tl, addr, ins, COND);
 }
 
+static void parseBR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
+	ins->int_dir.is_label = false;
+	ins->op0 = BRANCH_REG_OP0;
+	ins->branch.type = REG;
+	ins->branch.xn = reg_index(tl.operands[0]);
+}
+
 static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
 	ins->int_dir.is_label = false;
 	ins->op0 = LOAD_STORE_OP0;
@@ -363,6 +370,7 @@ op_func_ptr op_func_arr[] = {
 	[MADD] = parseMADD,
 	[MSUB] = parseMSUB,
 	[B] = parseB,
+	[BR] = parseBR,
 	[BCOND] = parseBCOND,
 	[LOAD_STORE] = parseLS,
 	[INTDIR] = parseINTDIR

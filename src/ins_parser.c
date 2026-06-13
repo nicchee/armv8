@@ -48,8 +48,8 @@ static op_t get_op_t (TokenisedLine tl){
 	else if (strcmp(opcstr, "msub") == 0) return MSUB;
 
 	// Branch
-	else if ((strcmp(opcstr, "b") == 0 || 
-		strcmp(opcstr, "br") == 0) ) return B;
+	else if (strcmp(opcstr, "b") == 0) return B; 
+	else if	(strcmp(opcstr, "br") == 0) return BR;
 	else if (strncmp(opcstr, "b.", 2) == 0) return BCOND;
 
 	// Load/store

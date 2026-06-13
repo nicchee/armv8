@@ -11,7 +11,7 @@ typedef enum {
 	SUB, SUBS, 
 	AND, ANDS, BIC, BICS, EOR, EON, ORR, ORN, 
 	MOVN, MOVK, MOVZ, MADD, MSUB, 
-	B, BCOND, 
+	B, BR, BCOND, 
 	LOAD_STORE,
 	HALT, 
 	INTDIR,

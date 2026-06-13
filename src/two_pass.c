@@ -23,6 +23,8 @@ static uint32_t assemble_bin(instruction_t ins) {
 			return dpi_reg_assembler(ins);
 		case BRANCH_OP0:
 			return assemble_branch(ins);
+		case BRANCH_REG_OP0:
+			return assemble_branch(ins);
 		case LOAD_STORE_OP0:
 			return assemble_load_store(ins);
 		case HALT_OP0:
