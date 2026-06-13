@@ -264,43 +264,66 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	else { 
 		// Shared SDT vars: L and xn
 		ins->load_store.sdt.L = (strcmp(tl.opcode, "ldr") == 0)? 1: 0;
-		char *xn = (ins->load_store.sf) ? // 1 -> x, 0 -> w
-			strchr(tl.operands[1], 'x') : 
-			strchr(tl.operands[1], 'w');
+		char *xn = strchr(tl.operands[1], 'x');
 		assert (xn != NULL);
-		ins->load_store.sdt.xn = reg_index(xn);
+		ins->load_store.sdt.xn = reg_index(xn);	
 		
+		char *last_char_ptr = &tl.operands[1][strlen(tl.operands[1]) - 1];
+
 		// Pre/ Post Index
-		if (((tl.operands[1])[strlen(tl.operands[1]) - 1]) != ']' ) { 
+		if (*last_char_ptr == '!') {
+
+			// Pre-index: [xn, #imm]
 			ins->load_store.mode = PRE_POST_INDEX;
-			char *simm = (tl.num_operands == 3) ?
-				strchr(tl.operands[2], '#') : 
-				strchr(tl.operands[1], '#');
-			assert (simm != NULL);
-			ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm,9); 
-			ins->load_store.sdt.pre_post_index.I = tl.num_operands == 2; // 1 -> pre, 0 -> post
-		}
-	
-		// Reg offset: ldr rt, [xn, xm]
-		else if ( (tl.num_operands == 3) && 
-			( !operand_starts_with(tl, 2, '#') )) { 
-			ins->load_store.mode = REG_OFFSET;
-			ins->load_store.sdt.xm = reg_index(tl.operands[2]);
-		}
+			char *simm = strchr(tl.operands[1], '#');
+			ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm, 9);
+			ins->load_store.sdt.pre_post_index.I = 1;
 
-		//Unsigned offset: ldr rt, [xn{, #<imm>}]
-		else {
-			ins->load_store.mode = UNSIGNED_OFFSET;
-			ins->load_store.sdt.unsigned_offset.U = 1;
-			char *imm = (tl.num_operands == 3) ?
-				strchr(tl.operands[2], '#') : 
-				NULL; 
-			//if not given #<imm>, set imm to 0
-			uint32_t parsed_imm = imm ? z_ext(imm) : 0;
-			ins->load_store.sdt.unsigned_offset.imm12 = 
-				parsed_imm / (ins->load_store.sf ? 8 : 4); 
-		}
+		} else if (tl.num_operands == 3 && tl.operands[2][0] == '#') {
 
+			// Post-index: [xn], #imm
+			ins->load_store.mode = PRE_POST_INDEX;
+			char *simm = strchr(tl.operands[2], '#');
+			ins->load_store.sdt.pre_post_index.simm9 = s_ext(simm, 9);
+			ins->load_store.sdt.pre_post_index.I = 0;
+
+		} else {
+
+			// Detect register offset buy looking inside [...] - e.g: [xn, xm]
+			char *comma = strchr(tl.operands[1], ',');
+			if (comma != NULL) {
+
+				char *after_comma = comma+1;
+				while (*after_comma == ' ') after_comma++;
+
+				if (*after_comma == 'x' || *after_comma == 'w') {
+
+					// Reg offset: ldr rt, [xn, xm]
+					ins->load_store.mode = REG_OFFSET;
+			        ins->load_store.sdt.xm = reg_index(after_comma);
+
+				} else {
+
+					//Unsigned offset: ldr rt, [xn{, #<imm>}]
+					ins->load_store.mode = UNSIGNED_OFFSET;
+					ins->load_store.sdt.unsigned_offset.U = 1;
+					char *imm = strchr(tl.operands[1], '#');
+					//if not given #<imm>, set imm to 0
+					uint32_t parsed_imm = imm ? z_ext(imm) : 0;
+					ins->load_store.sdt.unsigned_offset.imm12 = 
+						parsed_imm / (ins->load_store.sf ? 8 : 4); 
+								
+				}
+
+			} else {
+
+				// No comma - basic [xn] with no offset
+				ins->load_store.mode = UNSIGNED_OFFSET;
+				ins->load_store.sdt.unsigned_offset.U = 1;
+				ins->load_store.sdt.unsigned_offset.imm12 = 0;
+
+			}
+		}
 	} //endif for SDT
 } //end of parseLS 
 

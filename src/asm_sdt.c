@@ -44,9 +44,8 @@ uint32_t assemble_load_store(instruction_t instr) {
         case REG_OFFSET: {
             return (instr->load_store.sf << 30)
                 | (0xB8 << 24)
-                | (instr->load_store.sdt.unsigned_offset.U << 24)
                 | (instr->load_store.sdt.L << 22)
-                | (0x81A << 20)
+                | (0x81A << 10)
                 | (instr->load_store.sdt.xm << 16)
                 | (instr->load_store.sdt.xn << 5)
                 | instr->load_store.rt;
