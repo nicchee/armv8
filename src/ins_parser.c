@@ -50,7 +50,7 @@ static op_t get_op_t (TokenisedLine tl){
 	// Branch
 	else if ((strcmp(opcstr, "b") == 0 || 
 		strcmp(opcstr, "br") == 0) ) return B;
-	else if (strcmp(opcstr, "b.") == 0) return BCOND;
+	else if (strncmp(opcstr, "b.", 2) == 0) return BCOND;
 
 	// Load/store
 	else if (strcmp(opcstr, "ldr") == 0 || 
@@ -85,7 +85,6 @@ void shift_all_ops(TokenisedLine *tl) {
 			tl->operands[i] = tl->operands[i-1];
 		}
 	}
-	tl->num_operands++;
 } 
 //Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
 void set_op_to_rzr(TokenisedLine *tl, int set, int check) {

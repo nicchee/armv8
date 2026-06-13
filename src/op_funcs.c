@@ -22,6 +22,9 @@ static bool compare_string(char *s1, char *s2) {
 }
 
 static uint8_t reg_index(char *reg) {
+	if (strcmp(reg + 1, "zr") == 0) {
+		return 31; // 11111 = rt
+	}
 	return atoi(reg + 1);
 } 
 
@@ -46,7 +49,7 @@ static uint32_t z_ext(char *imm) {
 static int32_t get_offset(uint32_t curraddr, char *lit, symtable table) {
 	int32_t targetaddr = (*lit == '#') ? // first character of literal is # (immediate value)
 			s_ext(lit, 26) : get_addr(table, lit);
-
+	
 	return (targetaddr - curraddr) / 4;
 }
 
@@ -210,7 +213,7 @@ static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, inst
 	if (type == UNCOND) { // BRANCH UNCOND
 		ins->branch.simm26 = get_offset(*addr, tl.operands[0], table); // offset 
 	} else { // BRANCH COND
-		ins->branch.cond_t.simm19 = s_ext(tl.operands[1], 19);
+		ins->branch.cond_t.simm19 = get_offset(*addr, tl.operands[0], table);
 		char * cond = tl.opcode + 2;
 		if (compare_string(cond, "eq")) {
 			ins->branch.cond_t.cond = B_EQ;
