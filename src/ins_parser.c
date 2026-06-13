@@ -153,13 +153,13 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 //parse(rawline, curraddr, ins, symtable)
 //	parse raw line to insert value into parts of the ins struct
 void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
+	ins->op0 = EMPTY_SKIP_OP0; // set op0 to skip first so if it's a label and parse returns without populating instruction_t, second_pass() will know to skip the line
 	// line is null terminated in two pass before passing to parse 
 	TokenisedLine tl = tokenise(line);
 	
-	// checks if opcode is missing
+	// if opcode is missing, there's nothing to parse
 	if (tl.opcode == NULL) {
-		fprintf(stderr, "Opcode is missing!\n");
-		exit(EXIT_FAILURE);
+		return;
 	}
 	
 	op_t op = get_op_t(tl);
