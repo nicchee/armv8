@@ -26,47 +26,31 @@ int main(int argc, char **argv) {
 
 	oneline line;
 	fgets(line, MAXLINE, stdin);
+	line_null_terminated(line);
+
+	// initialising
+	init_gen(out);
+
+	// generating characters
     for (int i = 0; i < strlen(line); i++) {
     	if (isalnum(line[i])) {
-        	code_gen(out);
+        	codegen(out, line[i]);
         	break_gen(out);
 		} else if (isspace(line[i])) {
 			space_gen(out);
 		} else {
-		fprintf(stderr, "Invalid input: can only contain alphabetical characters, numbers and spaces. No punctuation");
-		exit(EXIT_FAILURE);
+			fprintf(stderr, "Invalid input: can only contain alphabetical characters, numbers and spaces. No punctuation");
+			exit(EXIT_FAILURE);
 		}
 	}
 
-    
-	// FILE *in = fopen(argv[1], "r");
-	// if (in == NULL) {
-	// 	fprintf(stderr, "Error opening assembly file");
-	// 	exit(EXIT_FAILURE);
-	// }
-    oneline s;  
-    line_null_terminated(s);
-    for (int i = 0; i < strlen(s); i++) {
-        if(isalnum(s[i])) {
-            codegen(s[i]);
-        } else { 
+	// halt
+	end_gen(out);
 
-        } 
-    }
+	// definition
+	def_gen(out);
 	fclose(out);
 }
-
-// morse_table[] {
-//     97 -> ['a'] = &parse_a 
-// }
-
-// s <- input "abc"
-
-// while loop 
-//     a = morse_alpha[alpha_calc(s[0])] -> ".-"
-//     a = ".-"
-//     while (i = 0, )
-//         codegen(a[i]) 
 
 static void line_null_terminated(char *s) {
     for (int i = 0; i < MAXLINE; i++) {
