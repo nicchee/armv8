@@ -1,5 +1,4 @@
 #include "codegen.h"
-#include "morsegen.h"
 #include "morse_table.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,33 +32,33 @@ void codegen(FILE *out, char c) {
 // turn on, delay 0.5 second, turn off
 void dot_gen(FILE *out) {
     // turn on
-    fputs(out, "str w1, [x0, #0x1c]\n");
+    fputs("str w1, [x0, #0x1c]\n", out);
 
     // delay 0.5 second
-    fputs(out, "eor w10, w10, w10\n");
-    fputs(out, "delay50ms:\n");
-    fputs(out, "eor w10, w10, w10\n");
-    fputs(out, "add w10, w10, #1\n");
-    fputs(out, "cmp w10, w2\n");
-    fputs(out, "b.ne delay30ms\n");
+    fputs("eor w10, w10, w10\n", out);
+    fputs("delay50ms:\n", out);
+    fputs("eor w10, w10, w10\n", out);
+    fputs("add w10, w10, #1\n", out);
+    fputs("cmp w10, w2\n", out);
+    fputs("b.ne delay50ms\n", out);
 
     // turn off
-    fputs(out, "str w1, [x0, #0x1c]\n");
+    fputs("str w1, [x0, #0x1c]\n", out);
 }
 
 // turn on, delay 1 second, turn off
 void dash_gen(FILE *out) {
     // turn on
-    fputs(out, "str w1, [x0, #0x1c]\n");
+    fputs("str w1, [x0, #0x1c]\n", out);
 
     // delay 0.5 second
-    fputs(out, "eor w10, w10, w10\n");
-    fputs(out, "delay1s:\n");
-    fputs(out, "eor w10, w10, w10\n");
-    fputs(out, "add w10, w10, #1\n");
-    fputs(out, "cmp w10, w3\n");
-    fputs(out, "b.ne delay1s\n");
+    fputs("eor w10, w10, w10\n", out);
+    fputs("delay1s:\n", out);
+    fputs("eor w10, w10, w10\n", out);
+    fputs("add w10, w10, #1\n", out);
+    fputs("cmp w10, w3\n", out);
+    fputs("b.ne delay1s\n", out);
 
     // turn off
-    fputs(out, "str w1, [x0, #0x1c]\n");
+    fputs("str w1, [x0, #0x1c]\n", out);
 }

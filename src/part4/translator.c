@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "codegen.h"
-#include "morse_table.h"
 #include "morsegen.h"
 
 
@@ -49,6 +49,8 @@ int main(void) {
 
 	// definition
 	def_gen(out);
+
+	fprintf(stdout, "Complete assembly code in morse.s\n");
 	fclose(out);
 }
 

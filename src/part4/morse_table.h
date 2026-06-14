@@ -32,8 +32,6 @@ const char *morse_alpha[] = {
     "--.."
 };
 
-
-
 const char *morse_digit[] = {
     //digit 0 to 9 ORDER IS IMPORTANT 
     "-----", // 0
@@ -47,7 +45,6 @@ const char *morse_digit[] = {
     "---..",
     "----."
 };
-
 
 extern int alpha_calc(char alpha);
 extern int digit_calc(char digit);
