@@ -5,11 +5,15 @@
 const char *morse_alpha[] = {
     //alpha a to z
     ".-", // A
+    // B 
+    // C 
     // STUB
 };
 
+
+
 const char *morse_digit[] = {
-    //digit 1 to 9 to 0 ORDER IS IMPORTANT 
+    //digit 0 to 9 ORDER IS IMPORTANT 
     ".---", // 1
     // STUB
 
