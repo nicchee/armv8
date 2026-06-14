@@ -7,11 +7,13 @@ CFLAGS  ?= -std=c17 -g\
 
 .PHONY: all clean
 
-all: assemble emulate
+all: assemble emulate translator
 
 assemble: assemble.o tokeniser.o dpi_assembler.o asm_branch.o asm_sdt.o symtable.o bin_writer.o two_pass.o ins_parser.o op_funcs.o
 
 emulate: emulate.o single_data_transfer.o dpi.o branch.o machine_state.o
+
+translator: translator.o part4/codegen.o part4/morsegen.o part4/morse_table.o
 
 assemble.o: assemble.c instruction.h
 emulate.o: emulate.c machine_state.c machine_state.h single_data_transfer.h dpi.h branch.h
@@ -30,6 +32,12 @@ two_pass.o: two_pass.c two_pass.h symtable.h
 ins_parser: ins_parser.c ins_parser.h 
 op_funcs.o: op_funcs.c op_funcs.h
 
+#translator
+translator.o: translator.c part4/morsegen.c part4/morsegen.h part4/codegen.c part4/codegen.h
+part4/codegen.o: part4/codegen.c part4/codegen.h part4/morse_table.c part4/morse_table.h
+part4/morsegen.o: part4/morsegen.c part4/morse_table.c part4/morse_table.h
+part4/morse_table.o: part4/morse_table.c part4/morse_table.h
+
 clean:
-	$(RM) *.o assemble emulate
+	$(RM) *.o part4/*.o assemble emulate translator
 	

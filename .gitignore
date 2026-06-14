@@ -18,6 +18,10 @@
 emulate
 assemble
 
+#ignore kernel8.img and morse.s
+kernel8.img
+morse.s
+
 #ignore junk files from compiling Haskell code
 *.hi
 
