@@ -2,6 +2,6 @@
 #define CODEGEN_H
 
 #include <stdio.h>
-extern void codegen(FILE *out);
+extern void codegen(FILE *out, char *s);
 
 #endif 
