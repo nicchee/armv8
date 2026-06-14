@@ -7,7 +7,7 @@
 #include "branch.h"
 #include "dpi.h"
 #include "single_data_transfer.h"
-
+#include "instruction.h"
 
 // Instruction
 static void bin_file_load(uint8_t *memory, const char *fileName);
@@ -60,9 +60,9 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-// Decode and execute stage
+// Decode and execute stage - skeleton
 static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
-	uint8_t op0 = ins >> SHIFT_OP0;
+	uint32_t op0 = ins >> SHIFT_OP0;
 
 	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
 		dpi_imm(ins, mstate_p);

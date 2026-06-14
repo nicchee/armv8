@@ -29,16 +29,17 @@ CFLAGS  ?= -std=c17 -g \
 
 .SUFFIXES: .c .o
 
-.PHONY: all clean emulator_dir
+.PHONY: all clean emulator_dir assembler_dir
 
-all: assemble emulator_dir
+all: assembler_dir emulator_dir
 
-assemble: assemble.o
-
-# This tells Make to jump into the emulate folder and run that Makefile
 emulator_dir:
 	$(MAKE) -C emulator
 
+assembler_dir:
+	$(MAKE) -C assembler
+
 clean:
-	$(RM) *.o assemble
 	$(MAKE) -C emulator clean
+	$(MAKE) -C assembler clean
+
