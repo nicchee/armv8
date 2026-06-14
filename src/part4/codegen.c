@@ -1,21 +1,33 @@
 #include "codegen.h"
 #include "morsegen.h"
+#include "morse_table.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
 
 static void dot_gen(FILE *out); 
 static void dash_gen(FILE *out);
 
+#define MORSELEN 10
 
-void codegen(FILE *out, char *s) { //s - space | a morse code of a character a .-
-    for (int i = 0 ;)
-        if (isspace(s[i])) {
-            space_gen
-        } else if(isalpha) {
+typedef char morsecodeline[MORSELEN];
 
+void codegen(FILE *out, char c) { 
+    morsecodeline code;
+    if (isalpha(c)) {
+        strcpy(code, morse_alpha[alpha_calc(c)]);
+    } else {
+        strcpy(code, morse_alpha[digit_calc(c)]);
+    }
+    for(int i = 0; i < strlen(code); i++ ){
+        if (code[i] == '.') {
+            dot_gen(out);
+        } else {
+            dash_gen(out);
         }
-	if (c == '.')
-        dot_gen 
+    }
 }
 
 // turn on, delay 0.5 second, turn off
