@@ -164,6 +164,11 @@ static int64_t sgx_simm9(int32_t value) {
 
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
   check_addr(addr, num_bytes);
+  if (addr >= 0x3f200000 && addr <= 0x3f2000c0) { // GPIO
+    // Debugging for part 3
+    printf("GPIO Write to address 0x%08lx\n", addr);
+    return; 
+  }
   uint64_t value = state->regs[rt];
   for (int i = 0; i < num_bytes; i++) {
     state->memory[addr + i] = (uint8_t)(value >> (i * 8));

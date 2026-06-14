@@ -62,7 +62,9 @@ void free_state(mstate_t *mstate_p) {
   * @function: check if address is Out-of-Bounds
 */
 bool check_addr(uint64_t addr, int num_bytes) {
-	if( addr + num_bytes > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
+	if((addr + num_bytes > MEMSIZE ||  (int64_t)addr < 0) // check if memory out of bound 
+		&& !(addr >= 0x3f200000 && addr <= 0x3f2000c0) //in 0x3f20 0000 to 0x3f20 00c0
+	) { //in 0x3f20 0000 to 0x3f20 00c0
 		fprintf(stderr, "%lx-%lx=memory\n", addr, addr + num_bytes);
 		fprintf(stderr, "Memory address out of bound!\n");
 		return false;

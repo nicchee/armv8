@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define MEMSIZE (21*1024*1024)
+#define MEMSIZE (2*1024*1024)
 #define INSTR_SIZE 4 
 #define STOP 0x8a000000
 

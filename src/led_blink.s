@@ -2,7 +2,7 @@ ldr w0, l1
 ldr w1, l2
 str w1, [w0, #0x08]
 ldr w2, l3
-loop: 
+
 ldr w1, l4
 str w1, [w0, #0x1c]
 eor w10, w10, w10
@@ -17,7 +17,7 @@ delay2:
 add w10, w10, #1
 cmp w10, w2
 b.ne delay2
-b loop
+
 and x0, x0, x0
 
 l1:
