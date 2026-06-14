@@ -13,23 +13,21 @@ void init_gen(FILE *out) {
 
 
 // delays 3 seconds
-void space_gen(FILE *out) {
+void space_gen(FILE *out, int j) {
     fputs("eor w10, w10, w10\n", out);
-    fputs("delayspace:\n", out);
-    fputs("eor w10, w10, w10\n", out);
+    fprintf(out, "delayspace%d:\n", j);
     fputs("add w10, w10, #1\n", out);
     fputs("cmp w10, w4\n", out);
-    fputs("b.ne delayspace\n", out);
+    fprintf(out, "b.ne delayspace%d\n", j);
 }
 
 // delays 1 second
-void break_gen(FILE *out) {
+void break_gen(FILE *out, int j) {
     fputs("eor w10, w10, w10\n", out);
-    fputs("delaybreak:\n", out);
-    fputs("eor w10, w10, w10\n", out);
+    fprintf(out, "delaybreak%d:\n", j);
     fputs("add w10, w10, #1\n", out);
     fputs("cmp w10, w3\n", out);
-    fputs("b.ne delaybreak\n", out);
+    fprintf(out, "b.ne delaybreak%d\n", j);
 }
 
 // halt function
@@ -41,8 +39,9 @@ void end_gen(FILE *out) {
 void def_gen(FILE *out) {
     fputs("mem:\n.int 0x3f200000\n", out); // mem addr
     fputs("on:\n.int 0x8\n", out); // turn on
-    fputs("ldelay50ms:\n.int 0x400000\n", out); //delay 0.5 sec
+    fputs("ldelay50ms:\n.int 0x200000\n", out); //delay 0.5 sec
     fputs("ldelay1s:\n.int 0x800000\n", out); //delay 1 sec
     fputs("ldelay3s:\n.int 0x1800000\n", out); //delay 3 sec
     fputs("off:\n.int 0x200000\n", out); // turn off
+    fputs("l4:\n.int 0x200000\n", out);
 }

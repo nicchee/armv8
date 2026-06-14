@@ -34,10 +34,10 @@ int main(void) {
 	// generating characters
     for (int i = 0; i < strlen(line); i++) {
     	if (isalnum(line[i])) {
-        	codegen(out, line[i]);
-        	break_gen(out);
+        	codegen(out, line[i], i);
+        	break_gen(out, i);
 		} else if (isspace(line[i])) {
-			space_gen(out);
+			space_gen(out, i);
 		} else {
 			fprintf(stderr, "Invalid input: can only contain alphabetical characters, numbers and spaces. No punctuation");
 			exit(EXIT_FAILURE);

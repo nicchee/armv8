@@ -85,7 +85,7 @@ uint32_t get_addr(symtable table, sym_t s) {
 			return table->entries[i].addr;
 		}
 	}
-	fprintf(stderr, "Couldn't find symbol in table");
+	fprintf(stderr, "Couldn't find symbol in table\n");
 	exit(1);
 
 }
