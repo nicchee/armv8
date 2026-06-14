@@ -1,6 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
+#include "morsegen.h"
+#include "codegen.h"
+
+#define MAXLINE 256
+typedef char oneline[MAXLINE];
+
+static void line_null_terminated(char *s);
 
 int main(int argc, char **argv) {
     // if (argc != 3) {
@@ -13,6 +21,18 @@ int main(int argc, char **argv) {
 	// 	fprintf(stderr, "Error opening assembly file");
 	// 	exit(EXIT_FAILURE);
 	// }
+    oneline s;  
+    line_null_terminated(s);
+    for (int i = 0; i < strlen(s); i++) {
+        if(isalnum(s[i])) {
+            codegen(s[i]);
+            break
+        } else { 
+
+        } else {
+            
+        }
+    }
 
 	
 
@@ -53,3 +73,13 @@ while loop
     a = ".-"
     while (i = 0, )
         codegen(a[i]) 
+
+static void line_null_terminated(char *s) {
+    for (int i = 0; i < MAXLINE; i++) {
+        if (s[i] == '\0') {
+            return;
+        }
+    }
+    fprintf(stderr, "String is not null terminated!");
+    exit(EXIT_FAILURE);
+}
