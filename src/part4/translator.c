@@ -14,7 +14,7 @@ typedef char oneline[MAXLINE];
 
 static void line_null_terminated(char *s);
 
-int main(int argc, char **argv) {
+int main(void) {
 	printf("Usage: enter 1 line of input, alphabet/numbers/spaces only\n");
 	printf("RPi will blink an LED in the morse code representation of your text\n");
 
