@@ -35,11 +35,14 @@ all: assembler_dir emulator_dir
 
 emulator_dir:
 	$(MAKE) -C emulator
+	cp emulator/emulate ./emulate
 
 assembler_dir:
 	$(MAKE) -C assembler
+	cp assembler/assemble ./assemble
 
 clean:
 	$(MAKE) -C emulator clean
 	$(MAKE) -C assembler clean
+	$(RM) *.o part4/*.o assemble emulate translator
 
