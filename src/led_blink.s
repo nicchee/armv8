@@ -2,8 +2,6 @@ ldr w0, l1
 ldr w1, l2
 str w1, [x0, #0x08]
 ldr w2, l3
-ldr w3, l5
-ldr w4, l6
 
 loop:
 ldr w1, l4
@@ -24,9 +22,6 @@ add w10, w10, #1
 cmp w10, w2
 b.ne delay2
 
-cmp w4, w3
-b.ge halt
-add w4, w4, #1
 b loop
 
 halt:
@@ -40,8 +35,3 @@ l3:
 .int 0x400000
 l4:
 .int 0x200000
-
-l5:
-.int 0xa
-l6:
-.int 0x1
