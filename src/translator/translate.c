@@ -3,8 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "part4/codegen.h"
-#include "part4/morsegen.h"
+#include "codegen.h"
+#include "morsegen.h"
 
 
 //get 1-line input from stdin, call code_gen and space_gen 

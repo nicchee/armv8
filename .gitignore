@@ -17,6 +17,7 @@
 *.o
 emulate
 assemble
+translate
 
 #ignore kernel8.img and morse.s
 kernel8.img
