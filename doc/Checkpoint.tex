@@ -1,30 +1,54 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
-\usepackage{fullpage}
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm,marginparwidth=2.5cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Group 10 C Project Interim Checkpoint Report}
+\author{Adeline [aaw25], Andrea [ayl125], Hanif [hib25], Wen Feng [wfc25]}
 
 \begin{document}
-
-\title{ARM Checkpoint... }
-\author{TODO}
-
 \maketitle
 
-\section{Group Organisation}
+\section{Group Coordination}
+\subsection{Work distribution and coordination}
+In our first group meeting, we discussed the specification for Part 1, distributed the workload, and set internal deadlines using Microsoft Planner. Our work was divided into setup (Sections 1.1-1.3, 1.9), data processing (Sections 1.4-1.6), single data transfer (Section 1.7), and branch (Section 1.8) among our four members. The setup included initialising the registers, PSTATE flags and machine state, writing a binary file loader and output file writer, implementing the halt instruction, and setting up the execution pipeline. Data processing included handling immediate and register operands, single data transfer handled loading and storing data, and branch handled jumps to new instructions. \newline
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+We planned to finish our respective parts by 29/5, 5 days after our first meeting. Since we had no idea how long the implementation and debugging would take, we allowed ourselves an entire week's time after 29/5 to merge code with the master branch, test it, and fix any bugs before the checkpoint on 5/6. Once we were done with Part 1 and had a rough idea of how long things would take, we would then plan our internal deadlines for Parts 2-4. \newline
 
-\section{Implementation Strategies}
+We decided to track our progress through Microsoft Planner and a WhatsApp group chat. We also arranged group meetings to check in on each member's progress.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+\subsection{Challenges and consequent changes to group coordination}
+We encountered a slight setback when one of our members fell ill during the week we had scheduled to complete Part 1, so to meet the internal deadline we set, the other three members of the group took up the half of the work she had not managed to complete. Thus, to make everyone's overall contribution to the project roughly equal, we changed the work distribution for Part 2 so that the member who was ill would take up more tasks in Part 2.
+
+\section{Emulator Implementation}
+\subsection{Emulator Structure}
+We structured our emulator by breaking it down into 4 modules: machine state, branch, single data transfer, and data processing. The machine state module contains the data structure to represent the machine state and functions to interact with the machine state, including initialisation, printing the values of the registers, accessing memory, and incrementing the program counter. The branch, single data transfer, and data processing modules each execute instructions of their respective types. The fetch, decode, execute cycle and binary file loader are placed together in the main emulate.c file.
+
+\subsection{Code reusability for Part 2}
+We created a new data type as an internal representation of an instruction. We used unions containing structs for the 4 types of instructions - Data Processing (Immediate) (DPI), Data Processing (Register), Single Data Transfer and Branch. Each struct contained fields relevant to the instruction type, and each instruction type was broken down further with structs and enumerations for flags if necessary. For example, the DPI struct contained 2 structs for arithmetic instructions and wide move. Enumerations were used to define the address mode flag for Single Data Transfer and the branch type flag for Branch.
+\newline 
+
+In the emulator, we decoded the 4-byte words into this representation instead of passing the instruction around as a 32-bit unsigned integer to avoid repeatedly shifting and masking the 4-byte words in each function. This data type can be reused in Part 2 to make debugging easier by separating the parsing and encoding of instructions.
+
+\section{Anticipated challenges for later parts}
+\subsection{Foreseeable challenges}
+Having reviewed the specification for Part 2, we anticipate significant functional overlap between the assembler and the emulator. Both components require shared logic for bit-level manipulation such as sign extension. In addition, both will rely on a common set of constants and enumerations to represent opcodes, condition codes, and shift types. If each component were developed in isolation, this would likely result in duplicated helper functions across the codebase, thus increasing the difficulty of code maintenance if specification changes arise and the chance of human error which would introduce bugs. \newline
+
+Given the C Final Test on 8/6, we knew that we would want to allocate more of our own time in the previous week to test preparation instead of the group project. Thus, we discussed two options regarding the timeline - finish Part 2 as soon as we could after we had completed Part 1 and leave the rest of the time until the test for test preparation, or shift some of the workload for Part 2 to after the test. 
+
+\subsection{Proposed solutions}
+To mitigate the problem of code duplication, we proposed introducing a shared utils module containing the helper functions and definitions required by both the assembler and the emulator. This would centralise low-level bit manipulation routines and shared constants in a single location, ensuring consistency and eliminating redundancy. Furthermore, the decoded instruction representation can be promoted into this shared module, allowing the assembler to encode into the same data structure that the emulator decodes from. This design enforces a single source of definitions for instruction semantics across both components and should substantially reduce the integration effort required when combining work from different branches. \newline
+
+To ensure we could prepare for the final test while still making progress on the group project, we gave ourselves until 10/6 to finish Part 2 as opposed to trying to finish it before the test. By extending our time frame for Part 2, we would have time after the final test to work on it and avoid rushing, which would increase the chance of making errors. We think that Part 3 will not be as technically challenging as Part 2, so we aim to finish implementing and debugging Part 2 and Part 3, and have a concrete idea of what we want to implement as the extension by 14/6, the end of the week. We would then have at least 5 days to complete the extension and the presentation slides before the final deadline of 19/6. 
 
 \end{document}
