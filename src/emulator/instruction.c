@@ -20,6 +20,17 @@
 #define SHIFT_HW 21
 #define SHIFT_OPI 23
 
+// Data Processing Instruction (Register)
+// Position of each instruction part
+#define SHIFT_OPERAND 10
+#define SHIFT_RM 16
+#define SHIFT_OPR 21
+#define SHIFT_M 28
+#define SHIFT_NEGATED 21
+#define SHIFT_SHIFT 22
+#define SHIFT_RA 10
+#define SHIFT_X 15
+
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 
 instruction_t makeins(uint32_t ins) {
