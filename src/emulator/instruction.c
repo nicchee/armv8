@@ -20,6 +20,7 @@
 #define SHIFT_HW 21
 #define SHIFT_OPI 23
 
+static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 
 instruction_t makeins(uint32_t ins) {
 	uint32_t op0 = (ins >> SHIFT_OP0) & MASK1111;
@@ -62,8 +63,39 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 	} else if (result->dp_imm.opi == WIDE_OPI) {
 		result->dp_imm.wide.hw = (ins >> SHIFT_HW) & MASK(2);
 		result->dp_imm.wide.imm16 = (ins >> SHIFT_IMM16) & MASK(16);
+	} else {
+		fprintf(stderr, "opi is unknown");
+		exit(EXIT_FAILURE);
 	}
 
 	return result;
 }
+
+static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
+	instruction_t result;
+
+	result->op0 = op0;
+	result->dp_reg.rd = (ins >> SHIFT_RD) & MASK(5);	
+	result->dp_reg.rn = (ins >> SHIFT_RN) & MASK(5);	
+	result->dp_reg.rm = (ins >> SHIFT_RM) & MASK(5);	
+	result->dp_reg.sf = (ins >> SHIFT_SF) & MASK(1);	
+	result->dp_reg.opc = (ins >> SHIFT_OPC) & MASK(2);	
+	result->dp_reg.m = (ins >> SHIFT_M) & MASK(1);	
+	result->dp_reg.opr = (ins >> SHIFT_OPR) & MASK(4);
+
+	if (op0 == DPR_OP0) {
+		result->dp_reg.arith_logic.shift = (ins >> SHIFT_SHIFT) & MASK(2);
+		result->dp_reg.arith_logic.imm6 = (ins >> SHIFT_OPERAND) & MASK(6);
+		result->dp_reg.arith_logic.N = (ins >> SHIFT_NEGATED) & MASK(1);
+	} else if (op0 == DPR_MUL_OP0) {
+		result->dp_reg.mul.x = (ins >> SHIFT_X) & MASK(1);
+		result->dp_reg.mul.ra = (ins >> SHIFT_RA) & MASK(5);
+	} else {
+		fprintf(stderr, "op0 is unknown");
+		exit(EXIT_FAILURE);
+	}
+
+	return result;
+}
+
 
