@@ -18,7 +18,7 @@ void codegen(FILE *out, char c, int j) {
     if (isalpha(c)) {
         strcpy(code, morse_alpha[alpha_calc(c)]);
     } else {
-        strcpy(code, morse_alpha[digit_calc(c)]);
+        strcpy(code, morse_digit[digit_calc(c)]);
     }
     for(int i = 0; i < strlen(code); i++ ){
         if (code[i] == '.') {
