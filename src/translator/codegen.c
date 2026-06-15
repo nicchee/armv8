@@ -18,7 +18,7 @@ void codegen(FILE *out, char c, int j) {
     if (isalpha(c)) {
         strcpy(code, morse_alpha[alpha_calc(c)]);
     } else {
-        strcpy(code, morse_alpha[digit_calc(c)]);
+        strcpy(code, morse_digit[digit_calc(c)]);
     }
     for(int i = 0; i < strlen(code); i++ ){
         if (code[i] == '.') {
@@ -29,12 +29,12 @@ void codegen(FILE *out, char c, int j) {
     }
 }
 
-// turn on, delay 0.5 second, turn off
+// turn on, delay 0.25 second, turn off
 void dot_gen(FILE *out, int j, int i) {
     // turn on
     fputs("str w1, [x0, #0x1c]\n", out);
 
-    // delay 0.5 second
+    // delay 0.25 second
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delayon%d%d:\n",i ,j);
     fputs("add w10, w10, #1\n", out);
@@ -44,7 +44,7 @@ void dot_gen(FILE *out, int j, int i) {
     // turn off
     fputs("str w1, [x0, #0x28]\n", out);
 
-    // delay 0.5 second
+    // delay 0.25 second
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delayoff%d%d:\n",i ,j);
     fputs("add w10, w10, #1\n", out);
@@ -57,7 +57,7 @@ void dash_gen(FILE *out, int j, int i) {
     // turn on
     fputs("str w1, [x0, #0x1c]\n", out);
 
-    // delay 0.5 second
+    // delay 1 second
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delay%d%d:\n",i ,j);
     fputs("add w10, w10, #1\n", out);
@@ -67,7 +67,7 @@ void dash_gen(FILE *out, int j, int i) {
     // turn off
     fputs("str w1, [x0, #0x28]\n", out);
 
-    // delay 0.5 second
+    // delay 0.25 second
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delayoff%d%d:\n",i ,j);
     fputs("add w10, w10, #1\n", out);
