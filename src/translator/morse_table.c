@@ -1,5 +1,3 @@
-#ifndef MORSE_TABLE_H
-#define MORSE_TABLE_H
 
 #include "morse_table.h"
 #include <ctype.h>
@@ -59,5 +57,4 @@ int digit_calc(char digit) {
     return digit - '0';
 }
 
-#endif
 
