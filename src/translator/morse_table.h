@@ -1,7 +1,7 @@
 #ifndef MORSE_TABLE_H
 #define MORSE_TABLE_H
 
-// morse is an array to string
+// morse is an array of strings
 const char *morse_alpha[] = {
     //alpha a to z
     ".-", // A
@@ -33,7 +33,7 @@ const char *morse_alpha[] = {
 };
 
 const char *morse_digit[] = {
-    //digit 0 to 9 ORDER IS IMPORTANT 
+    //digit 0 to 9 
     "-----", // 0
     ".---", 
     "..---",
