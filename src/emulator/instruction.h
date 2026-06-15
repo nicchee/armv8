@@ -95,7 +95,8 @@ struct instruction_t {
 					uint32_t sh, imm12;
 				} arith;
 				struct {
-					uint32_t hw, imm16;
+					uint32_t hw; 
+					uint64_t imm16;
 				} wide;
 			};
 		} dp_imm;
@@ -159,5 +160,7 @@ struct instruction_t {
 };
 
 typedef struct instruction_t *instruction_t;
+
+extern instruction_t makeins(uint32_t ins);
 
 #endif
