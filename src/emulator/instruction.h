@@ -67,6 +67,51 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define B_LE 0Xd // 1101
 #define B_AL 0Xe // 1110
 
+#define SHIFT_OP0 25
+#define MASK1111 15
+
+// Data Processing Instruction Immediate + Register
+// Position of each instruction part
+#define SHIFT_RD 0
+#define SHIFT_RN 5
+#define SHIFT_OPC 29
+#define SHIFT_SF 31
+
+// Data Processing Instruction (Immediate)
+// Position of each instruction part
+#define SHIFT_IMM12 10
+#define SHIFT_SH 22
+#define SHIFT_IMM16 5
+#define SHIFT_HW 21
+#define SHIFT_OPI 23
+
+// Data Processing Instruction (Register)
+// Position of each instruction part
+#define SHIFT_OPERAND 10
+#define SHIFT_RM 16
+#define SHIFT_OPR 21
+#define SHIFT_M 28
+#define SHIFT_NEGATED 21
+#define SHIFT_SHIFT 22
+#define SHIFT_RA 10
+#define SHIFT_X 15
+
+// Branch Instruction
+// Position of each instruction part
+#define SHIFT_SIMM26 0
+#define SHIFT_XN 5
+#define SHIFT_COND 0
+#define SHIFT_SIMM19 5
+
+// Type of Branches
+// Mask
+#define MASKUNCONDOP 0xfc000000
+#define MASKREGOP    0xffff0000
+#define MASKCONDOP   0xfc000000
+// Bit code
+#define UNCONDOP  0x14000000
+#define REGOP     0xd61f0000
+#define CONDOP    0x54000000
 
 // Struct for instruction_t
 struct instruction_t {
