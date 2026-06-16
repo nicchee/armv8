@@ -62,16 +62,16 @@ int main(int argc, char **argv) {
 
 // Decode and execute stage - skeleton
 static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
-	uint32_t op0 = ins >> SHIFT_OP0;
+	instruction_t instruction = makeins(ins);
 
-	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
-		dpi_imm(ins, mstate_p);
-	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
-		dpi_reg(ins, mstate_p);
-	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
-		single_data_transfer(ins, mstate_p);
-	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
-		branch(ins , mstate_p);
+	if ((instruction->op0 & MASK1110) == DPI_IMM) { // checks 100x
+		dpi_imm(instruction, mstate_p);
+	} else if ((instruction->op0 & MASK0111) == DPI_REG) { // checks x101 
+		dpi_reg(instruction, mstate_p);
+	} else if ((instruction->op0 & MASK0101) == LOADSTORE) { // checks x1x0
+		single_data_transfer(instruction, mstate_p);
+	} else if ((instruction->op0 & MASK1110) == BRANCH) { // checks 101x
+		branch(instruction, mstate_p);
 	} else {
 		exit (EXIT_FAILURE);
 	}
