@@ -46,7 +46,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 8);
         } else {
-          write_memory(state, addr, 8, state->regs[rt]);
+          write_memory(state, addr, 8, rt);
         }
       } else {
         uint32_t uoffset = imm12 * 4;
@@ -54,7 +54,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 4);
         } else {
-          write_memory(state, addr, 4, state->regs[rt]);
+          write_memory(state, addr, 4, rt);
         }
       }
       break;
@@ -72,13 +72,13 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
           if (l == 1) {
               state->regs[rt] = read_memory(state, addr, 8);
             } else {
-              write_memory(state, addr, 8, state->regs[rt]);
+              write_memory(state, addr, 8, rt);
             }
         } else {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 4);
           } else {
-            write_memory(state, addr, 4, state->regs[rt]);
+            write_memory(state, addr, 4, rt);
           }
         }
         state->regs[xn] += simm9;
@@ -89,13 +89,13 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 8);
           } else {
-            write_memory(state, addr, 8, state->regs[rt]);
+            write_memory(state, addr, 8, rt);
           }
         } else {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 4);
           } else {
-            write_memory(state, addr, 4, state->regs[rt]);
+            write_memory(state, addr, 4, rt);
           }
         }
         state->regs[xn] += simm9;
@@ -112,13 +112,13 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 8);
         } else {
-          write_memory(state, addr, 8, state->regs[rt]);
+          write_memory(state, addr, 8, rt);
         }
       } else {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 4);
         } else {
-          write_memory(state, addr, 4, state->regs[rt]);
+          write_memory(state, addr, 4, rt);
         }
       }
       break;
