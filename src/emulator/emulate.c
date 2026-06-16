@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
 			decode_execute(ins, &mState);
 		}
 	}
+	free_ins();
 	free_state(&mState);
 	return EXIT_SUCCESS;
 }

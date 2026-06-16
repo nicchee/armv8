@@ -208,5 +208,6 @@ typedef struct instruction_t *instruction_t;
 
 extern instruction_t makeins(uint32_t ins);
 extern void init_ins(void);
+extern void free_ins(void);
 
 #endif
