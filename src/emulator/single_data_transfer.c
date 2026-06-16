@@ -39,16 +39,50 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
 /*
   * @function: implement the single data transfer and load literal
 */
-void single_data_transfer(uint32_t instruction, mstate_t *state) {
-  // Extraction of bits for Single Data Transfer & Load Literal
-  uint32_t rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
-  uint32_t xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
-  int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
-  uint32_t offset = (instruction >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
-  uint32_t l = (instruction >> SHIFT_L) & MASK(WIDTH_L);
-  uint32_t u = (instruction >> SHIFT_U) & MASK(WIDTH_U);
-  uint32_t sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
-  uint32_t op = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);
+void single_data_transfer(instruction_t instruction, mstate_t *state) {
+  // // Extraction of bits for Single Data Transfer & Load Literal
+  // uint32_t rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
+  // uint32_t xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
+  // int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
+  // uint32_t offset = (instruction >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
+  // uint32_t l = (instruction >> SHIFT_L) & MASK(WIDTH_L);
+  // uint32_t u = (instruction >> SHIFT_U) & MASK(WIDTH_U);
+  // uint32_t sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
+  // uint32_t op = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);
+
+  switch (instruction->load_store.mode) {
+      case LIT_LOAD: {
+        uint64_t addr = state->pc + (sgx(simm19) * 4);
+        if (sf == 1) {
+          state->regs[rt] = read_memory(state, addr, 8);
+        } else {
+          state->regs[rt] = read_memory(state, addr, 4);
+        }
+        break;
+      }
+
+      case UNSIGNED_OFFSET: {
+        if (sf == 1) {
+        uint64_t uoffset = (uint64_t) imm12 * 8;
+        uint64_t addr = state->regs[xn] + uoffset;
+        uint32_t rt = instruction->load_store.rt
+        if (l == 1) {
+          state->regs[rt] = read_memory(state, addr, 8);
+        } else {
+          write_memory(state, addr, 8, rt);
+        }
+      } else {
+        uint32_t uoffset = imm12 * 4;
+        uint64_t addr = state->regs[xn] + uoffset;
+        if (l == 1) {
+          state->regs[rt] = read_memory(state, addr, 4);
+        } else {
+          write_memory(state, addr, 4, rt);
+        }
+      }
+      }
+  }
+
 
   if (op == 1) {
     // Compute the base address
@@ -93,7 +127,7 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
           }
         }
       } else {
-        int64_t simm9 = sgx_simm9((offset >> 2) & MASK(9));
+        int64_t simm9 = sgx((offset >> 2) & MASK(9));
         uint32_t i = (offset >> 1) & 1;
         if (i == 0) {
           // Post-Indexed
@@ -134,7 +168,7 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
     }
   } else {
       // Literal (op == 0) (L == 1)
-      uint64_t addr = state->pc + (sgx_simm19(simm19) * 4);
+      uint64_t addr = state->pc + (sgx(simm19) * 4);
       if (sf == 1) {
         state->regs[rt] = read_memory(state, addr, 8);
       } else {
@@ -146,18 +180,27 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
 }
 
 // Helper functions
-static int64_t sgx_simm19(int32_t value) {
-  int64_t result = value & MASK_SIMM19;
-  if (result & MASK_BIT_19) {
-    result |= ~MASK_SIMM19;
-  }
-  return result;
-}
+// static int64_t sgx_simm19(int32_t value) {
+//   int64_t result = value & MASK_SIMM19;
+//   if (result & MASK_BIT_19) {
+//     result |= ~MASK_SIMM19;
+//   }
+//   return result;
+// }
 
-static int64_t sgx_simm9(int32_t value) {
-  int64_t result = value & MASK_SIMM9;
-  if (result & MASK_BIT_9) {
-    result |= ~MASK_SIMM9;
+// static int64_t sgx_simm9(int32_t value) {
+//   int64_t result = value & MASK_SIMM9;
+//   if (result & MASK_BIT_9) {
+//     result |= ~MASK_SIMM9;
+//   }
+//   return result;
+// }
+
+static inst64_t sgx(int32_t value, int bit_no) {
+	int64_t result = value & MASK(bit_no);
+
+	if ((result >> bit_no) == 1) {
+    result |= ~MASK(bit_no);
   }
   return result;
 }

@@ -48,9 +48,34 @@
 #define REGOP     0xd61f0000
 #define CONDOP    0x54000000
 
+// Single Data Transfer
+// Position of each instruction part
+#define SHIFT_RT 0
+#define SHIFT_XN 5
+#define SHIFT_SIMM19 5
+#define SHIFT_OFFSET 10
+#define SHIFT_L 22
+#define SHIFT_U 24
+#define SHIFT_SF 30
+#define SHIFT_OP 31
+#define SHIFT_XM 6
+
+// Single Data Transfer
+// Width of each instruction part
+#define WIDTH_RT 5
+#define WIDTH_XN 5
+#define WIDTH_SIMM19 19
+#define WIDTH_OFFSET 12
+#define WIDTH_L 1
+#define WIDTH_U 1
+#define WIDTH_SF 1
+#define WIDTH_OP 1
+#define WIDTH_XM 5
+
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
+
 
 instruction_t makeins(uint32_t ins) {
 	uint32_t op0 = (ins >> SHIFT_OP0) & MASK1111;
@@ -128,6 +153,7 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
+
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 	instruction_t result;
 
@@ -147,5 +173,43 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 		exit(EXIT_FAILURE);
 	}
 	
+	return result;
+}
+
+static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
+	instruction_t result;
+
+	result->op0 = op0;
+	result->load_store.rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
+	result->load_store.sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
+	result->load_store.sdt.xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
+	result->load_store.sdt.L = (instruction >> SHIFT_L) & MASK(WIDTH_L);
+	result->load_store.sdt.unsigned_offset.U = (instruction >> SHIFT_U) & MASK(WIDTH_U);
+	uint32_t offset = (instruction >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
+	uint32_t bit31 = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);	
+	
+	if (bit31 == 1) {
+		if (result->load_store.sdt.unsigned_offset.U = 1) {
+			// Unsigned Offset
+			result->load_store.mode = UNSIGNED_OFFSET;
+		} else {
+			uint32_t det_bit = offset & 1;
+			if (det_bit == 0) {
+				// Register Offset
+				result->load_store.mode = REG_OFFSET;
+				uint32_t xm = (result->load_store. >> SHIFT_XM) & MASK(WIDTH_XM);
+			} else {
+				// Pre/Post Index
+				result->load_store.mode = PRE_POST_INDEX;
+				result->load_store.pre_post_index.simm9 = sgx_simm9((offset >> 2) & MASK(9));
+				result->load_store.pre_post_index.I = (offset >> 1) & 1;
+			}
+		}
+	} else {
+		// Load Literal
+		result->load_store.mode = LIT_LOAD;
+		result->load_store.simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
+	}
+
 	return result;
 }
