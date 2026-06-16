@@ -75,6 +75,16 @@
 #define WIDTH_OP 1
 #define WIDTH_XM 5
 
+#define SHIFT_OP0 25
+#define MASK1110 14
+#define MASK0111 7
+#define MASK0101 5
+
+#define DPI_IMM 8
+#define DPI_REG 5
+#define LOADSTORE 4
+#define BRANCH 10
+
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
@@ -83,8 +93,23 @@ static int64_t sgx(int32_t value, int bit_no);
 static instruction_t result;
 
 instruction_t makeins(uint32_t ins) {
-	uint32_t op0 = (ins >> SHIFT_OP0) & MASK1111;
+	uint32_t op0 = (ins >> SHIFT_OP0) & MASK(4);
 
+	if ((op0 & MASK1110) == DPI_IMM) { // checks 100x
+		return dpi_imm_makeins(ins, op0);
+	} else if ((op0 & MASK0111) == DPI_REG) { // checks x101 
+		return dpi_reg_makeins(ins, op0);
+	} else if ((op0 & MASK0101) == LOADSTORE) { // checks x1x0
+		return load_store_makeins(ins, op0);
+	} else if ((op0 & MASK1110) == BRANCH) { // checks 101x
+		return branch_makeins(ins, op0);
+	} else {
+		fprintf(stderr, "op0 is unknown");
+		exit (EXIT_FAILURE);
+	}
+	
+
+/*
 	switch (op0) {
 		case DPI_OP0:
 			return dpi_imm_makeins(ins, op0);
@@ -101,7 +126,7 @@ instruction_t makeins(uint32_t ins) {
 		default:
 			fprintf(stderr, "op0 is unknown");
 			exit(EXIT_FAILURE);
-	}
+	}*/
 }
 
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
