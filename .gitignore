@@ -38,3 +38,5 @@ morse.s
 *.nav
 *.toc
 
+#ignore all test output file
+*.txt
