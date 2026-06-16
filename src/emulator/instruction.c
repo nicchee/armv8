@@ -201,14 +201,17 @@ static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 			} else {
 				// Pre/Post Index
 				result->load_store.mode = PRE_POST_INDEX;
-				result->load_store.pre_post_index.simm9 = sgx_simm9((offset >> 2) & MASK(9));
+				result->load_store.pre_post_index.simm9 = sgx((offset >> 2), 9);
 				result->load_store.pre_post_index.I = (offset >> 1) & 1;
 			}
 		}
-	} else {
+	} else if (bit31 == 0) {
 		// Load Literal
 		result->load_store.mode = LIT_LOAD;
 		result->load_store.simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
+	} else {
+		fprintf(stderr, "ERROR: Load Store instruction not recognised");
+		exit(EXIT_FAILURE);
 	}
 
 	return result;
