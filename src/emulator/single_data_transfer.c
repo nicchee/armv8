@@ -19,7 +19,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
   switch (instruction->load_store.mode) {
 
     case LIT_LOAD: {
-      int32_t simm19 = instruction->load_store.simm19
+      int32_t simm19 = instruction->load_store.simm19;
       uint64_t addr = state->pc + (sgx(simm19, 19) * 4);
       if (sf == 1) {
         state->regs[rt] = read_memory(state, addr, 8);
@@ -30,8 +30,9 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
     }
     
     case UNSIGNED_OFFSET: {
-      uint32_t xn = instruction->load_store.sdt.xn
-      uint32_t l = instruction->load_store.sdt.L
+      uint32_t xn = instruction->load_store.sdt.xn;
+      uint32_t l = instruction->load_store.sdt.L;
+      uint32_t imm12 = instruction->load_store.sdt.unsigned_offset.imm12;
       if (sf == 1) {
         uint64_t uoffset = (uint64_t) imm12 * 8;
         uint64_t addr = state->regs[xn] + uoffset;
@@ -118,7 +119,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
 }
 
 // Helper functions
-static inst64_t sgx(int32_t value, int bit_no) {
+static int64_t sgx(int32_t value, int bit_no) {
   int64_t result = value & MASK(bit_no);
   
 	if ((result >> (bit_no - 1)) == 1) {

@@ -17,7 +17,7 @@ single_data_transfer.o: single_data_transfer.c single_data_transfer.h machine_st
 dpi.o: dpi.c dpi.h machine_state.h instruction.h
 branch.o: branch.c machine_state.h branch.h instruction.h
 machine_state.o: machine_state.c machine_state.h
-instruction.o: instruction.c instruction.h
+instruction.o: instruction.c instruction.h machine_state.h
 
 clean:
 	$(RM) *.o emulate

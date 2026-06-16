@@ -13,7 +13,6 @@
 
 // Arithmetic and Logical
 #define ARITH_OPR_MASK 9
-#define ARITH_OPR 8
 #define ARITH_BL_M 0
 #define LSL 0
 #define LSR 1
@@ -41,7 +40,7 @@ static void dpi_imm_wide(instruction_t instruction, mstate_t *state);
 static OpGroup get_op_group(int m, uint32_t opr);
 static void dpi_reg_arith_bitlogic(instruction_t instruction, mstate_t *state, OpGroup opgroup);
 static void dpi_reg_bitlogic(instruction_t instruction, mstate_t *state, int sf, uint64_t op2);
-static void dpi_reg_mult(uint64_t instruction, mstate_t *state);
+static void dpi_reg_mult(instruction_t instruction, mstate_t *state);
 
 /*
  * @brief Executes Data Processing Instruction (Immediate) 
@@ -138,11 +137,6 @@ static void dpi_imm_wide(instruction_t instruction, mstate_t *state) {
  * @param state* pointer to the machine state
  */
 void dpi_reg(instruction_t instruction, mstate_t *state) {
-	int rd_index = (instruction >> SHIFT_RD) & MASK(5);
-	int rn_index = (instruction >> SHIFT_RN) & MASK(5);
-	int rm_index = (instruction >> SHIFT_RM) & MASK(5);
-	int sf = (instruction >> SHIFT_SF) & MASK(1);
-	int opc = (instruction >> SHIFT_OPC) & MASK(2);
 	OpGroup opgroup = get_op_group(instruction->dp_reg.M, instruction->dp_reg.opr);
 	if (opgroup == ARITHMETIC || opgroup == BIT_LOGIC) {
 		dpi_reg_arith_bitlogic(instruction, state, opgroup);
@@ -177,7 +171,7 @@ static OpGroup get_op_group(int m, uint32_t opr) {
 /*
  * helper function for dpi_reg to do arithmetic/bit-logic instructions
  */
-static void dpi_reg_arith_bitlogic(uint32_t instruction, mstate_t *state, OpGroup opgroup) {
+static void dpi_reg_arith_bitlogic(instruction_t instruction, mstate_t *state, OpGroup opgroup) {
 	int shift = instruction->dp_reg.arith_logic.shift;
 	int operand = instruction->dp_reg.arith_logic.imm6;
 	int rm_index = instruction->dp_reg.rm; 
@@ -275,7 +269,7 @@ static void dpi_reg_bitlogic(instruction_t instruction, mstate_t *state, int sf,
 /*
  * helper function for dpi_reg to do multiply instructions
  */
-static void dpi_reg_mult(uint64_t instruction, mstate_t *state) {
+static void dpi_reg_mult(instruction_t instruction, mstate_t *state) {
 	int sf = instruction->dp_reg.sf;
 	int opc = instruction->dp_reg.opc;
 	int rd_index = instruction->dp_reg.rd;

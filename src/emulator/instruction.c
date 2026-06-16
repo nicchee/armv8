@@ -1,6 +1,9 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "instruction.h"
+#include "machine_state.h"
 
 #define SHIFT_OP0 25
 #define MASK1111 15
@@ -56,7 +59,7 @@
 #define SHIFT_OFFSET 10
 #define SHIFT_L 22
 #define SHIFT_U 24
-#define SHIFT_SF 30
+#define SHIFT_SDT_SF 30
 #define SHIFT_OP 31
 #define SHIFT_XM 6
 
@@ -76,7 +79,8 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0);
-
+static int64_t sgx(int32_t value, int bit_no);
+static instruction_t result;
 
 instruction_t makeins(uint32_t ins) {
 	uint32_t op0 = (ins >> SHIFT_OP0) & MASK1111;
@@ -101,7 +105,7 @@ instruction_t makeins(uint32_t ins) {
 }
 
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
-	instruction_t result;
+	//instruction_t result;
 
 	result->op0 = op0;
 	result->dp_imm.sf = (ins >> SHIFT_SF) & MASK(1);
@@ -128,7 +132,7 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 }
 
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
-	instruction_t result;
+	//instruction_t result;
 
 	result->op0 = op0;
 	result->dp_reg.rd = (ins >> SHIFT_RD) & MASK(5);	
@@ -136,7 +140,7 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 	result->dp_reg.rm = (ins >> SHIFT_RM) & MASK(5);	
 	result->dp_reg.sf = (ins >> SHIFT_SF) & MASK(1);	
 	result->dp_reg.opc = (ins >> SHIFT_OPC) & MASK(2);	
-	result->dp_reg.m = (ins >> SHIFT_M) & MASK(1);	
+	result->dp_reg.M = (ins >> SHIFT_M) & MASK(1);	
 	result->dp_reg.opr = (ins >> SHIFT_OPR) & MASK(4);
 
 	if (op0 == DPR_OP0) {
@@ -156,7 +160,7 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 
 
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
-	instruction_t result;
+	//instruction_t result;
 
 	result->op0 = op0;
 	if ((ins & MASKUNCONDOP) == UNCONDOP) {
@@ -167,7 +171,7 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 		result->branch.xn = (ins >> SHIFT_XN) & MASK(5);
 	} else if ((ins & MASKCONDOP) == CONDOP) {
 		result->branch.type = COND;
-		result->branchi.cond_t.cond = (ins >> SHIFT_COND) & MASK(4);
+		result->branch.cond_t.cond = (ins >> SHIFT_COND) & MASK(4);
 		result->branch.cond_t.simm19 = (ins >> SHIFT_SIMM19) & MASK(19);
 	} else {
 		fprintf(stderr, "Branch instruction not recognised");
@@ -178,19 +182,19 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 }
 
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
-	instruction_t result;
+	//instruction_t result;
 
 	result->op0 = op0;
-	result->load_store.rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
-	result->load_store.sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
-	result->load_store.sdt.xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
-	result->load_store.sdt.L = (instruction >> SHIFT_L) & MASK(WIDTH_L);
-	result->load_store.sdt.unsigned_offset.U = (instruction >> SHIFT_U) & MASK(WIDTH_U);
-	uint32_t offset = (instruction >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
-	uint32_t bit31 = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);	
+	result->load_store.rt = (ins >> SHIFT_RT) & MASK(WIDTH_RT); 
+	result->load_store.sf = (ins >> SHIFT_SDT_SF) & MASK(WIDTH_SF);
+	result->load_store.sdt.xn = (ins >> SHIFT_XN) & MASK(WIDTH_XN);
+	result->load_store.sdt.L = (ins >> SHIFT_L) & MASK(WIDTH_L);
+	result->load_store.sdt.unsigned_offset.U = (ins >> SHIFT_U) & MASK(WIDTH_U);
+	uint32_t offset = (ins >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
+	uint32_t bit31 = (ins >> SHIFT_OP) & MASK(WIDTH_OP);	
 	
 	if (bit31 == 1) {
-		if (result->load_store.sdt.unsigned_offset.U = 1) {
+		if (result->load_store.sdt.unsigned_offset.U == 1) {
 			// Unsigned Offset
 			result->load_store.mode = UNSIGNED_OFFSET;
 		} else {
@@ -198,18 +202,18 @@ static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 			if (det_bit == 0) {
 				// Register Offset
 				result->load_store.mode = REG_OFFSET;
-				uint32_t xm = (result->load_store. >> SHIFT_XM) & MASK(WIDTH_XM);
+				result->load_store.sdt.xm = (ins >> SHIFT_XM) & MASK(WIDTH_XM);
 			} else {
 				// Pre/Post Index
 				result->load_store.mode = PRE_POST_INDEX;
-				result->load_store.pre_post_index.simm9 = sgx((offset >> 2), 9);
-				result->load_store.pre_post_index.I = (offset >> 1) & 1;
+				result->load_store.sdt.pre_post_index.simm9 = sgx((offset >> 2), 9);
+				result->load_store.sdt.pre_post_index.I = (offset >> 1) & 1;
 			}
 		}
 	} else if (bit31 == 0) {
 		// Load Literal
 		result->load_store.mode = LIT_LOAD;
-		result->load_store.simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
+		result->load_store.simm19 = (ins >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
 	} else {
 		fprintf(stderr, "ERROR: Load Store instruction not recognised");
 		exit(EXIT_FAILURE);
@@ -217,3 +221,13 @@ static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 
 	return result;
 }
+
+static int64_t sgx(int32_t value, int bit_no) {
+  int64_t result = value & MASK(bit_no);
+  
+	if ((result >> (bit_no - 1)) == 1) {
+    result |= ~(uint64_t)MASK(bit_no);
+  }
+  return result;
+}
+
