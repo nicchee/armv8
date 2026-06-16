@@ -13,6 +13,13 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
   * @function: implement the single data transfer and load literal
 */
 void single_data_transfer(instruction_t instruction, mstate_t *state) {
+
+  fprintf(stderr, "[sdt] entry: regs[0]=0x%lx regs[2]=0x%lx mode=%d rt=%u\n",
+            state->regs[0], state->regs[2],
+            instruction->load_store.mode,
+            instruction->load_store.rt);
+  fflush(stderr);
+
   uint32_t rt = instruction->load_store.rt;
   uint32_t sf = instruction->load_store.sf;
   
@@ -39,7 +46,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 8);
         } else {
-          write_memory(state, addr, 8, rt);
+          write_memory(state, addr, 8, state->regs[rt]);
         }
       } else {
         uint32_t uoffset = imm12 * 4;
@@ -47,9 +54,10 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 4);
         } else {
-          write_memory(state, addr, 4, rt);
+          write_memory(state, addr, 4, state->regs[rt]);
         }
       }
+      break;
     }
 
     case PRE_POST_INDEX: {
@@ -64,13 +72,13 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
           if (l == 1) {
               state->regs[rt] = read_memory(state, addr, 8);
             } else {
-              write_memory(state, addr, 8, rt);
+              write_memory(state, addr, 8, state->regs[rt]);
             }
         } else {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 4);
           } else {
-            write_memory(state, addr, 4, rt);
+            write_memory(state, addr, 4, state->regs[rt]);
           }
         }
         state->regs[xn] += simm9;
@@ -81,17 +89,18 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 8);
           } else {
-            write_memory(state, addr, 8, rt);
+            write_memory(state, addr, 8, state->regs[rt]);
           }
         } else {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 4);
           } else {
-            write_memory(state, addr, 4, rt);
+            write_memory(state, addr, 4, state->regs[rt]);
           }
         }
         state->regs[xn] += simm9;
       }
+      break;
     }
 
     case REG_OFFSET: {
@@ -103,17 +112,24 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 8);
         } else {
-          write_memory(state, addr, 8, rt);
+          write_memory(state, addr, 8, state->regs[rt]);
         }
       } else {
         if (l == 1) {
           state->regs[rt] = read_memory(state, addr, 4);
         } else {
-          write_memory(state, addr, 4, rt);
+          write_memory(state, addr, 4, state->regs[rt]);
         }
       }
+      break;
     }
   }
+  fprintf(stderr, "[sdt] output: regs[0]=0x%lx regs[2]=0x%lx mode=%d rt=%u\n",
+            state->regs[0], state->regs[2],
+            instruction->load_store.mode,
+            instruction->load_store.rt);
+  fflush(stderr);
+
   pc_inc(state);
   return;
 }
