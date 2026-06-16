@@ -159,7 +159,6 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 		fprintf(stderr, "opi is unknown");
 		exit(EXIT_FAILURE);
 	}
-
 	return result;
 }
 
@@ -229,6 +228,7 @@ static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 		if (result->load_store.sdt.unsigned_offset.U == 1) {
 			// Unsigned Offset
 			result->load_store.mode = UNSIGNED_OFFSET;
+			result->load_store.sdt.unsigned_offset.imm12 = offset;
 		} else {
 			uint32_t det_bit = offset & 1;
 			if (det_bit == 0) {
