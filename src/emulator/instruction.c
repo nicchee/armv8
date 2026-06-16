@@ -75,6 +75,7 @@
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
+static instruction_t load_store_makeins(uint32_t ins, uint32_t op0);
 
 
 instruction_t makeins(uint32_t ins) {
