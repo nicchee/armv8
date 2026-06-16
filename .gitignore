@@ -40,3 +40,4 @@ morse.s
 
 #ignore all test output file
 *.txt
+*.bin
