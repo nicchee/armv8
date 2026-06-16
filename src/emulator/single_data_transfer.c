@@ -168,8 +168,8 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
 }
 
 // static int64_t sgx_simm19(int32_t value) {
-  //   int64_t result = value & MASK_SIMM19;
-  //   if (result & MASK_BIT_19) {
+//     int64_t result = value & MASK_SIMM19;
+//     if (result & MASK_BIT_19) {
 //     result |= ~MASK_SIMM19;
 //   }
 //   return result;
@@ -178,10 +178,10 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
 // static int64_t sgx_simm9(int32_t value) {
 //   int64_t result = value & MASK_SIMM9;
 //   if (result & MASK_BIT_9) {
-  //     result |= ~MASK_SIMM9;
-  //   }
-  //   return result;
-  // }
+//       result |= ~MASK_SIMM9;
+//     }
+//     return result;
+//   }
   
 
 // if (op == 1) {
