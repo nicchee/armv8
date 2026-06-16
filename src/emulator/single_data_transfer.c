@@ -3,34 +3,6 @@
 #include "machine_state.h"
 #include "single_data_transfer.h"
 
-// Position of each instruction part for Single Data Transfer & Load Literal
-#define SHIFT_RT 0
-#define SHIFT_XN 5
-#define SHIFT_SIMM19 5
-#define SHIFT_OFFSET 10
-#define SHIFT_L 22
-#define SHIFT_U 24
-#define SHIFT_SF 30
-#define SHIFT_OP 31
-#define SHIFT_XM 6
-
-// Width of each instcution part for Single Data Transfer & Load Literal
-#define WIDTH_RT 5
-#define WIDTH_XN 5
-#define WIDTH_SIMM19 19
-#define WIDTH_OFFSET 12
-#define WIDTH_L 1
-#define WIDTH_U 1
-#define WIDTH_SF 1
-#define WIDTH_OP 1
-#define WIDTH_XM 5
-
-// Masking for simm9 and simm19
-#define MASK_SIMM9 0x1FF
-#define MASK_BIT_9 0x100
-#define MASK_SIMM19 0x7FFFF
-#define MASK_BIT_19 0x40000
-
 // Private helper functions
 static int64_t sgx(int32_t value, int bit_no);
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
