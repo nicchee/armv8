@@ -31,7 +31,26 @@
 #define SHIFT_RA 10
 #define SHIFT_X 15
 
-static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
+// Branch Instruction
+// Position of each instruction part
+#define SHIFT_SIMM26 0
+#define SHIFT_XN 5
+#define SHIFT_COND 0
+#define SHIFT_SIMM19 5
+
+// Type of Branches
+// Mask
+#define MASKUNCONDOP 0xfc000000
+#define MASKREGOP    0xffff0000
+#define MASKCONDOP   0xfc000000
+// Bit code
+#define UNCONDOP  0x14000000
+#define REGOP     0xd61f0000
+#define CONDOP    0x54000000
+
+static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
+static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
+static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
 
 instruction_t makeins(uint32_t ins) {
 	uint32_t op0 = (ins >> SHIFT_OP0) & MASK1111;
@@ -109,4 +128,24 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
+static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
+	instruction_t result;
 
+	result->op0 = op0;
+	if ((ins & MASKUNCONDOP) == UNCONDOP) {
+		result->branch.type = UNCOND;
+		result->branch.simm26 = (ins >> SHIFT_SIMM26) & MASK(26);
+	} else if ((ins & MASKREGOP) == REGOP) {
+		result->branch.type = REG;
+		result->branch.xn = (ins >> SHIFT_XN) & MASK(5);
+	} else if ((ins & MASKCONDOP) == CONDOP) {
+		result->branch.type = COND;
+		result->branchi.cond_t.cond = (ins >> SHIFT_COND) & MASK(4);
+		result->branch.cond_t.simm19 = (ins >> SHIFT_SIMM19) & MASK(19);
+	} else {
+		fprintf(stderr, "Branch instruction not recognised");
+		exit(EXIT_FAILURE);
+	}
+	
+	return result;
+}
