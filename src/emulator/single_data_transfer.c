@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "machine_state.h"
 #include "single_data_transfer.h"
+#include "instruction.h"
 
 // Private helper functions
 static int64_t sgx(int32_t value, int bit_no);

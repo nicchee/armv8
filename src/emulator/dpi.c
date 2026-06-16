@@ -5,6 +5,7 @@
 
 #include "machine_state.h"
 #include "dpi.h"
+#include "instruction.h"
 
 // OPI instruction
 #define ARITH 2 

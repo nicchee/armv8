@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+
 #include "branch.h"
 #include "machine_state.h"
+#include "instruction.h"
 
 
 // Type of Branches
