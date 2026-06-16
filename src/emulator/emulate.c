@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "There must be 1 or 2 arguments passed to %s\n", argv[0]);
 		exit(EXIT_FAILURE);
 	} 
+	init_ins();
 	mstate_t mState;
 	init(&mState);
 	bin_file_load(mState.memory, argv[1]);

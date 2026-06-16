@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "instruction.h"
 #include "machine_state.h"
@@ -91,6 +92,12 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0);
 static int64_t sgx(int32_t value, int bit_no);
 static instruction_t result;
+
+void init_ins(void) {
+	result = malloc(sizeof(struct instruction_t));
+	assert (result != NULL); 
+}
+
 
 instruction_t makeins(uint32_t ins) {
 	uint32_t op0 = (ins >> SHIFT_OP0) & MASK(4);
@@ -256,3 +263,6 @@ static int64_t sgx(int32_t value, int bit_no) {
   return result;
 }
 
+void free_ins(void){ 
+	free(result);
+}
