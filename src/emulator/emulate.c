@@ -13,16 +13,6 @@
 static void bin_file_load(uint8_t *memory, const char *fileName);
 static uint32_t fetch(mstate_t *mstate_p);
 static void decode_execute(uint32_t ins, mstate_t *mstate_p);
-
-#define SHIFT_OP0 25
-#define MASK1110 14
-#define MASK0111 7
-#define MASK0101 5
-
-#define DPI_IMM 8
-#define DPI_REG 5
-#define LOADSTORE 4
-#define BRANCH 10
 // End of Instruction Macros
 
 
