@@ -37,6 +37,7 @@ morse.s
 *.vrb
 *.nav
 *.toc
+*.vscode
 
 #ignore all test output file
 *.txt
