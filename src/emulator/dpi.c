@@ -105,9 +105,6 @@ static void dpi_imm_wide(instruction_t instruction, mstate_t *state) {
 	int sf = instruction->dp_imm.sf;
 	int opc = instruction->dp_imm.opc;
 	int rd_index = instruction->dp_imm.rd;
-
-	fprintf(stderr, "[movz] opi=%u opc=%u hw=%u imm16=0x%lx rd=%d\n",
-        instruction->dp_imm.opi, opc, hw, imm16, rd_index);
 	
 	if (sf == 0 && hw > 1) {
 		fprintf(stderr, "Error: cannot shift by more than 16 bits in W-register.\n");
@@ -132,11 +129,6 @@ static void dpi_imm_wide(instruction_t instruction, mstate_t *state) {
 			fprintf(stderr, "Error: invalid opc.\n");
 			exit(EXIT_FAILURE);
 	} 
-
-	fprintf(stderr, "[movz] regs[%d] = 0x%lx\n", rd_index, state->regs[rd_index]);
-	fprintf(stderr, "[movz] &state->regs[0] = %p\n",
-        (void*)&state->regs[0]);
-	fflush(stderr);
 }
 
 /*
