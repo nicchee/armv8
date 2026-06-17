@@ -64,7 +64,7 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
       uint32_t xn = instruction->load_store.sdt.xn;
       uint32_t l = instruction->load_store.sdt.L;
       uint32_t i = instruction->load_store.sdt.pre_post_index.I;
-      uint32_t simm9 = instruction->load_store.sdt.pre_post_index.simm9;
+      int32_t simm9 = instruction->load_store.sdt.pre_post_index.simm9;
       if (i == 0) {
         // Post-Indexed
         uint64_t addr = state->regs[xn];
