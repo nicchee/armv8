@@ -1,7 +1,3 @@
-#include "op_funcs.h"
-#include "ins_parser.h"
-#include "symtable.h"
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,7 +5,13 @@
 #include <ctype.h>
 #include <assert.h>
 
+#include "op_funcs.h"
+#include "ins_parser.h"
+#include "symtable.h"
+
 #define NUM_OPFUNCS 21
+
+// Helper utils function
 
 //if (operand_starts_with(tl, index, c)) {..}
 //	return true if operand at index start with c
@@ -17,18 +19,24 @@ static int operand_starts_with(TokenisedLine tl, int index, char c) {
 	return *(tl.operands[index]) == c;
 }
 
+//if (compare_stirng(s1, s2)) {..}
+//	same function as strcmp, but has a better syntax
 static bool compare_string(char *s1, char *s2) {
 	return (strcmp(s1, s2) == 0) ? true : false;  
 }
 
+//char *reg = "00111";
+//int index = reg_index (reg)
+//	returns register index from string
 static uint8_t reg_index(char *reg) {
-	if (strcmp(reg + 1, "zr") == 0) {
+	if (compare_string(reg + 1, "zr")) {
 		return 31; // 11111 = rt
 	}
 	return atoi(reg + 1);
 } 
 
-//	sign extend an immediate value that takes the form of "#_"
+//int32_t simm19 = s_ext(raw_imm19, 19);
+//	sign extend an immediate value that takes the form of "#_", by the number of bits
 static int32_t s_ext(char *imm, int bits) {
 	int imm_val = strtol(imm + 1, NULL, 0);
 	int shift = 32 - bits;
@@ -39,6 +47,7 @@ static int32_t s_ext(char *imm, int bits) {
 	return ((int32_t)(imm_val << shift)) >> shift; 
 }
 
+//uint32_t imm19 = z_ext(raw_imm19);
 //	zero extend an immediate value that takes the form of "#_"
 static uint32_t z_ext(char *imm) {
 	int imm_val = strtol(imm + 1, NULL, 0); //remove '#'
@@ -46,12 +55,17 @@ static uint32_t z_ext(char *imm) {
 	return 0xffff & imm_val;
 }
 
+//symtable table;
+//int32_t offset = get_offset(curraddr, lit, table);
+//	returns address offset from the current address, the literal and the symtable from first pass
 static int32_t get_offset(uint32_t curraddr, char *lit, symtable table) {
 	int32_t targetaddr = (*lit == '#') ? // first character of literal is # (immediate value)
 			s_ext(lit, 26) : get_addr(table, lit);
 
 	return (targetaddr - curraddr) / 4;
 }
+
+// Helper function for parsing dp
 
 static void parse_dp (
 	TokenisedLine tl, 
@@ -110,6 +124,9 @@ static void parse_dp (
 }
 
 // op functions:
+
+// arithmetic (array) functions 
+
 static void parseADD(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parse_dp (tl, ins, ADD_OPC, ARITH_OPR, 0);
 }
@@ -125,6 +142,8 @@ static void parseSUB(symtable table, TokenisedLine tl, uint32_t *addr, instructi
 static void parseSUBS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parse_dp (tl, ins, SUBS_OPC, ARITH_OPR, 0);
 }
+
+// logic (array) functions
 
 static void parseAND(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parse_dp (tl, ins, AND_OPC, LOGIC_OPR, 0);
@@ -158,6 +177,7 @@ static void parseORN(symtable table, TokenisedLine tl, uint32_t *addr, instructi
 	parse_dp (tl,ins, ORN_OPC, LOGIC_OPR, 1);
 }
 	
+// Helper function for parsing wide move
 
 static void parseMOVKNZ(
 	TokenisedLine tl, 
@@ -181,6 +201,8 @@ static void parseMOVKNZ(
 	ins->dp_imm.wide.imm16 = z_ext(tl.operands[1]);
 }
 
+// wide move (array) function
+
 static void parseMOVK(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parseMOVKNZ(tl, ins, MOVK_OPC);
 }
@@ -192,6 +214,8 @@ static void parseMOVN(symtable table, TokenisedLine tl, uint32_t *addr, instruct
 static void parseMOVZ(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parseMOVKNZ(tl, ins, MOVZ_OPC);
 }
+
+// Helper function for parsing multiplication
 
 static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x) {
 	ins->int_dir.is_label = false;
@@ -207,6 +231,8 @@ static void parseMUL(TokenisedLine tl, uint32_t *addr, instruction_t ins, int x)
 	ins->dp_reg.mul.ra = reg_index(tl.operands[3]);
 }
 
+// multiplication (array) function
+
 static void parseMADD(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parseMUL(tl, addr, ins, 0);
 }
@@ -214,6 +240,8 @@ static void parseMADD(symtable table, TokenisedLine tl, uint32_t *addr, instruct
 static void parseMSUB(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parseMUL(tl, addr, ins, 1);
 }
+
+// Helper function for parsing branch
 
 static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins, branch_type_t type) {
 	ins->int_dir.is_label = false;
@@ -242,6 +270,8 @@ static void parse_B_COND (symtable table, TokenisedLine tl, uint32_t *addr, inst
 	}
 }
 
+// branch (array) functions
+
 static void parseB(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	parse_B_COND(table, tl, addr, ins, UNCOND);
 }
@@ -256,6 +286,8 @@ static void parseBR(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	ins->branch.type = REG;
 	ins->branch.xn = reg_index(tl.operands[0]);
 }
+
+// Helper function for parsing load store
 
 static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins ) {
 	ins->int_dir.is_label = false;
@@ -336,6 +368,8 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 	} //endif for SDT
 } //end of parseLS 
 
+// load store (array) functions 
+
 static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instruction_t ins) {
 	ins->op0 = INTDIR_OP0;
 	if (isdigit(tl.operands[0][0]) || 
@@ -349,6 +383,8 @@ static void parseINTDIR(symtable table, TokenisedLine tl, uint32_t *addr, instru
 		ins->int_dir.label = strdup(tl.operands[0]);
 	}
 }
+
+// GLOBAL
 
 // array of function pointers
 op_func_ptr op_func_arr[] = { 
@@ -375,6 +411,4 @@ op_func_ptr op_func_arr[] = {
 	[LOAD_STORE] = parseLS,
 	[INTDIR] = parseINTDIR
 };
-
-
 

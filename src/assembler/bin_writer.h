@@ -1,8 +1,6 @@
 #ifndef FILEIO_H
 #define FILEIO_H
 
-#include "symtable.h"
-
 #include <stdint.h>
 #include <stdio.h>
 

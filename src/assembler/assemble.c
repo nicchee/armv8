@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "symtable.h"
 #include "instruction.h"
 #include "bin_writer.h"
 #include "two_pass.h"
-
 
 int main(int argc, char **argv) {
   	if (argc != 3) {

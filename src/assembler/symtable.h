@@ -22,7 +22,6 @@ struct symtable {
 
 typedef struct symtable *symtable;
 
-// Prototypes for all symtable functions
 extern symtable init_table(void);
 extern void free_table(symtable table);
 extern bool insert_symkv(symtable table, sym_t s, uint32_t address);

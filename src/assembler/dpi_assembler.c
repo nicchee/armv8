@@ -4,6 +4,9 @@
 #include "dpi_assembler.h"
 #include "instruction.h"
 
+//instruction_t ins;
+//return dpi_imm_assembler(ins)
+//  generates the 32-bit machine code for Data Processing (Immediate) instructions
 uint32_t dpi_imm_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_imm.sf << SHIFT_SF;
@@ -24,6 +27,9 @@ uint32_t dpi_imm_assembler(instruction_t insp) {
     return machine_code;
 }
 
+//instruction_t ins;
+//return dpi_imm_assembler(ins)
+//  generates the 32-bit machine code for Data Processing (Register) instructions
 uint32_t dpi_reg_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_reg.sf << SHIFT_SF;
