@@ -62,7 +62,7 @@
 #define SHIFT_U 24
 #define SHIFT_SDT_SF 30
 #define SHIFT_OP 31
-#define SHIFT_XM 6
+#define SHIFT_XM 16
 
 // Single Data Transfer
 // Width of each instruction part
