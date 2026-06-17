@@ -1,6 +1,3 @@
-// Masking function - generate the mask bits required
-#define MASK(x) ((1U << (x)) - 1)
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

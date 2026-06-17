@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-// Decode and execute stage - skeleton
+// Decode and execute stage
 static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	instruction_t instruction = makeins(ins);
 
