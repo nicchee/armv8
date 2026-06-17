@@ -40,7 +40,7 @@ void dpi_imm(instruction_t instruction, mstate_t *state) {
 
 	if (instruction->dp_imm.opi == ARITH_OPI) {	
 		dpi_arith(state, instruction->dp_imm.sf, instruction->dp_imm.opc, instruction->dp_imm.rd, instruction->dp_imm.arith.rn, instruction->dp_imm.arith.imm12);
-	} else if (instruction->dp_imm.opi == WMOVE_OPI) {
+	} else if (instruction->dp_imm.opi == WIDE_OPI) {
 		dpi_imm_wide(instruction, state);
 	} else {
 		fprintf(stderr, "Error: invalid opi.\n");
