@@ -6,12 +6,12 @@
 #include "codegen.h"
 #include "morsegen.h"
 
-
 //get 1-line input from stdin, call code_gen and space_gen 
 
 #define MAXLINE 256
 typedef char oneline[MAXLINE];
 
+// Static helper prototype function
 static void line_null_terminated(char *s);
 
 int main(void) {
@@ -54,6 +54,10 @@ int main(void) {
 	fclose(out);
 }
 
+// Helper 
+
+//line_null_terminated(s);
+//	check if s is null_terminated;
 static void line_null_terminated(char *s) {
     for (int i = 0; i < MAXLINE; i++) {
         if (s[i] == '\0') {

@@ -5,13 +5,13 @@
 #include "single_data_transfer.h"
 #include "instruction.h"
 
-// Private helper functions
-static int64_t sgx(int32_t value, int bit_no);
+// Static helper prototype functions
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
 
-/*
-  * @function: implement the single data transfer and load literal
-*/
+//instruction_t ins;
+//mstate_t *statep;
+//single_data_transfer(ins, statep);
+//  implement the single data transfer and load literal
 void single_data_transfer(instruction_t instruction, mstate_t *state) {
 
   uint32_t rt = instruction->load_store.rt;
@@ -123,16 +123,12 @@ void single_data_transfer(instruction_t instruction, mstate_t *state) {
   return;
 }
 
-// Helper functions
-static int64_t sgx(int32_t value, int bit_no) {
-  int64_t result = value & MASK(bit_no);
-  
-	if ((result >> (bit_no - 1)) == 1) {
-    result |= ~(uint64_t)MASK(bit_no);
-  }
-  return result;
-}
+// Helper 
 
+//mstate_t statep;
+//write_memory(statep, addr, num_bytes, rt);
+//  check if addr is valid with num_bytes. 
+//  if addr is valid, write to state's memory with value in register rt
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
   check_addr(addr, num_bytes);
   if (addr >= 0x3f200000 && addr <= 0x3f2000c0) { // GPIO

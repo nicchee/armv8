@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 extern void first_pass(FILE *in, symtable table);
 extern void second_pass(FILE *in, symtable table, const char *out_name);
 

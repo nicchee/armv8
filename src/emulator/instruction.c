@@ -10,7 +10,6 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0);
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0);
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0);
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0);
-static int64_t sgx(int32_t value, int bit_no);
 static instruction_t result;
 
 void init_ins(void) {
@@ -36,6 +35,16 @@ instruction_t makeins(uint32_t ins) {
 	}
 }
 
+//free_ins();
+//	free global result varible;
+void free_ins(void){ 
+	free(result);
+}
+
+// Helper
+
+//return dpi_imm_makeins;
+//	helper function for makeins to initialise instruction_t for op0 = dpi_imm	
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 
 	result->op0 = op0;
@@ -61,6 +70,8 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
+//return dpi_reg_makeins(ins, op0);
+//	helper function for makeins to initialise instruction_t for op0 = dpi_reg	
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 
 	result->op0 = op0;
@@ -87,7 +98,8 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
-
+//return branch_makeins(ins,op0);
+//	helper function for makeins to initialise instruction_t for op0 = branch	
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 
 	result->op0 = op0;
@@ -109,6 +121,8 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
+//return load_store_makeins(ins, op0);
+//	helper function for makeins to initialise instruction_t for op0 = load_store
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 
 	result->op0 = op0;
@@ -150,15 +164,6 @@ static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
 	return result;
 }
 
-static int64_t sgx(int32_t value, int bit_no) {
-  int64_t result = value & MASK(bit_no);
-  
-	if ((result >> (bit_no - 1)) == 1) {
-    result |= ~(uint64_t)MASK(bit_no);
-  }
-  return result;
-}
 
-void free_ins(void){ 
-	free(result);
-}
+
+

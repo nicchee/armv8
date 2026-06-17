@@ -4,7 +4,9 @@
 #include <string.h>
 #include "machine_state.h"
 
-
+//mstate_t *statep;
+//print(statep, fp);
+//	print all values of registers in a format to output file fp
 void print(mstate_t *state, FILE *fp) {
 	fprintf(fp, "Registers:\n");
 	for (int i = 0; i < 31; i++) {
@@ -41,6 +43,9 @@ void print(mstate_t *state, FILE *fp) {
 	}
 }
 
+//mstate_t *mstate_p;
+//init(mstate_p);
+//	initialises mstate_p;
 void init(mstate_t *mstate_p) {
 	memset(mstate_p->regs, 0, sizeof(mstate_p->regs)); // zero all registers
 	mstate_p->zr = 0;
@@ -50,29 +55,29 @@ void init(mstate_t *mstate_p) {
 	memset(mstate_p->memory, 0, MEMSIZE); //set all memory to 0
 }
 
+//mstate_t *mstate_p;
+//free_state(mstate_p);
 // Freeing the memory (avoiding memory leak)
 void free_state(mstate_t *mstate_p) {
 	free(mstate_p->memory);
 }
 
-/*
-  * @function: check if address is Out-of-Bounds
-*/
-bool check_addr(uint64_t addr, int num_bytes) {
+//check_addr(addr, num_bytes);
+//	check if address is Out-of-Bounds
+void check_addr(uint64_t addr, int num_bytes) {
 	if((addr + num_bytes > MEMSIZE ||  (int64_t)addr < 0) // check if memory out of bound 
 		&& !(addr >= 0x3f200000 && addr <= 0x3f2000c0) //in 0x3f20 0000 to 0x3f20 00c0
 	) { //in 0x3f20 0000 to 0x3f20 00c0
 		fprintf(stderr, "%lx-%lx=memory\n", addr, addr + num_bytes);
 		fprintf(stderr, "Memory address out of bound!\n");
-		return false;
+		exit(EXIT_FAILURE);
 	}
-	return true;
+	return;
 }
 
-/*
-  * @function: check if instruction address is Out-of-Bounds
-  *	check if its 4 byte aligned
-*/
+//if(check_instr_addr(addr)) {..};
+//	check if instruction address is Out-of-Bounds
+//	check if its 4 byte aligned
 bool check_instr_addr(uint64_t addr) {
 	if( addr + 4 > MEMSIZE || (int64_t)addr < 0 ) { // check if memory out of bound
 		fprintf(stderr, "Memory address out of bound!\n");
@@ -85,6 +90,10 @@ bool check_instr_addr(uint64_t addr) {
 	return true;
 }
 
+//mstate_t statep;
+//uint32_t result = read_memory(statep, addr, num_bytes);
+//	check if addr is valid with num_bytes
+//	if addr is valid, return value at memory address
 uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
   check_addr(addr, num_bytes);
   uint64_t value = 0;
@@ -94,10 +103,18 @@ uint64_t read_memory(mstate_t *state, uint64_t addr, int num_bytes) {
   return value;
 }
 
-/**
- * 	pc_inc(state);
- * 		PC = PC + 4
- */
+//pc_inc(state);
+//	PC = PC + 4
 void pc_inc(mstate_t *state) {
 	state->pc += INSTR_SIZE;
 }
+
+int64_t sgx(int32_t value, int bit_no) {
+  int64_t result = value & MASK(bit_no);
+  
+	if ((result >> (bit_no - 1)) == 1) {
+    result |= ~(uint64_t)MASK(bit_no);
+  }
+  return result;
+}
+

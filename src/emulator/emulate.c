@@ -3,18 +3,19 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+
 #include "machine_state.h"
 #include "branch.h"
 #include "dpi.h"
 #include "single_data_transfer.h"
 #include "instruction.h"
 
+// Static helper prototype function
 // Instruction
 static void bin_file_load(uint8_t *memory, const char *fileName);
 static uint32_t fetch(mstate_t *mstate_p);
 static void decode_execute(uint32_t ins, mstate_t *mstate_p);
 // End of Instruction Macros
-
 
 int main(int argc, char **argv) {
 	if (argc > 3 || argc < 2) {
@@ -52,7 +53,10 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-// Decode and execute stage
+// Helper
+//mstate_t *mstate_p;
+//decode_execute(ins, mstate_p);
+// 	Decode and execute stage
 static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	instruction_t instruction = makeins(ins);
 
@@ -69,8 +73,8 @@ static void decode_execute(uint32_t ins, mstate_t *mstate_p) {
 	}
 }
 
-// bin_file_load(memory, argv[1]);
-// load .bin file into memory
+//bin_file_load(memory, argv[1]);
+//	load .bin file into memory
 static void bin_file_load(uint8_t *memory, const char *fileName){
 	FILE *in = fopen(fileName, "rb");
 	if (in == NULL) {
@@ -89,8 +93,10 @@ static void bin_file_load(uint8_t *memory, const char *fileName){
 	fclose(in);
 }
 
-
-// Fetch stage
+//mstate_t *mstate_p;
+//uint32_t ins = fetch(mstate_p);
+// 	Fetch stage for the next instruction.
+//	Uses little endian
 static uint32_t fetch(mstate_t *mstate_p) {
 	if (check_instr_addr(mstate_p->pc) == false){
 		return STOP;

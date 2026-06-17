@@ -11,8 +11,9 @@
 #include "asm_branch.h"
 #include "dpi_assembler.h" 
 
-//Helper function for second_pass() 
-//Binary encoding using functions in asm-branch, asm-sdt, dpi_assembler
+//uint32_t result = assemble_bin(ins); 
+//	Helper function for second_pass() 
+//	Binary encoding using functions in asm-branch, asm-sdt, dpi_assembler
 static uint32_t assemble_bin(instruction_t ins) {
 	switch (ins->op0) {
 	    	case DPI_OP0:
@@ -36,6 +37,7 @@ static uint32_t assemble_bin(instruction_t ins) {
 			exit(EXIT_FAILURE);
 	}
 }
+
 //first_pass (in, symtable);
 // 	pass through the whole assembly (.s) file and insert LABEL and its address into symtable
 void first_pass(FILE *in, symtable table) {
@@ -66,7 +68,9 @@ void first_pass(FILE *in, symtable table) {
 	}
 }
 
-// Second pass generates uint32_t binary number and writes to out file
+//symtable table;
+//second_pass(in, table, out_name);
+//	second pass generates uint32_t binary number and writes to out file
 void second_pass(FILE *in, symtable table, const char *out_name) {
     line_t line;
     uint32_t currAddr = 0;

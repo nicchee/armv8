@@ -8,7 +8,6 @@
 #define INITIAL_MAX_SYMTABLE_SIZE 256
 
 typedef char sym_t[MAX_SYM_LEN];
-
 typedef struct {
 	sym_t symbol;
 	uint32_t addr;

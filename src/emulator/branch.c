@@ -6,7 +6,6 @@
 #include "machine_state.h"
 #include "instruction.h"
 
-
 // Conditions
 enum {
     EQ = 0,
@@ -18,9 +17,8 @@ enum {
     AL = 14
 } Cond;
 
-static int check_cond(int cond, pstate_t pstate);
-
-// public 
+//  Static helper prototype function
+static int check_cond(int cond, pstate_t pstate); 
 
 void branch(instruction_t instruction, mstate_t *state){
     if (instruction->branch.type == UNCOND) {
@@ -56,13 +54,11 @@ void branch(instruction_t instruction, mstate_t *state){
     }
 }
 
-// helper 
+// Helper 
 
-/**
- * branch_cond = check_cond(cond, pstate);
- *  check if condition is true to branch
- *  return 1 if true, 0 if false, -1 if cond not recognised
-*/
+//branch_cond = check_cond(cond, pstate);
+//  check if condition is true to branch
+//  return 1 if true, 0 if false, -1 if cond not recognised
 static int check_cond(int cond, pstate_t pstate) { 
     switch (cond) {
         case EQ: return pstate.Z == 1;

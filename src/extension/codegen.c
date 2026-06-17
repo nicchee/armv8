@@ -1,11 +1,12 @@
-#include "codegen.h"
-#include "morse_table.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 
+#include "codegen.h"
+#include "morse_table.h"
 
+// Static helper prototype function
 static void dot_gen(FILE *out, int j, int i); 
 static void dash_gen(FILE *out, int j, int i);
 
@@ -13,6 +14,9 @@ static void dash_gen(FILE *out, int j, int i);
 
 typedef char morsecodeline[MORSELEN];
 
+//codegen(out, c, j);
+//  generate morse code to light up led based on c being dot or dashes. 
+//  use j to create unique delay label
 void codegen(FILE *out, char c, int j) { 
     morsecodeline code;
     if (isalpha(c)) {
@@ -29,7 +33,8 @@ void codegen(FILE *out, char c, int j) {
     }
 }
 
-// turn on, delay 0.25 second, turn off
+//dot_gen(out, j, i);
+//  generate assembly code to turn on led, delay 0.25 second, turn off
 void dot_gen(FILE *out, int j, int i) {
     // turn on
     fputs("str w1, [x0, #0x1c]\n", out);
@@ -51,8 +56,8 @@ void dot_gen(FILE *out, int j, int i) {
     fputs("cmp w10, w2\n", out);
     fprintf(out, "b.ne delayoff%d%d\n",i ,j);
 }
-
-// turn on, delay 1 second, turn off
+// dash_gen(out, j, i);
+//  generate assembly code to turn onled , delay 1 second, turn off
 void dash_gen(FILE *out, int j, int i) {
     // turn on
     fputs("str w1, [x0, #0x1c]\n", out);

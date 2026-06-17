@@ -1,6 +1,9 @@
 #include <stdio.h>
+
 #include "morsegen.h"
 
+//init_gen(out);
+//  initialise assembly file by declaring registers
 void init_gen(FILE *out) {
     fputs("ldr w0, mem\n", out);
     fputs("ldr w1, on\n", out);
@@ -11,8 +14,9 @@ void init_gen(FILE *out) {
     fputs("ldr w1, l4\n", out);
 }
 
-
-// delays 3 seconds
+//space_gen(out, j);
+//  generate assembly code to delay 3 seconds 
+//  uses j to create unique delay label
 void space_gen(FILE *out, int j) {
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delayspace%d:\n", j);
@@ -21,7 +25,9 @@ void space_gen(FILE *out, int j) {
     fprintf(out, "b.ne delayspace%d\n", j);
 }
 
-// delays 1 second
+//break_gen(out, j);
+//  generate assembly code to delay 1 seconds 
+//  uses j to create unique delay label
 void break_gen(FILE *out, int j) {
     fputs("eor w10, w10, w10\n", out);
     fprintf(out, "delaybreak%d:\n", j);
@@ -30,12 +36,14 @@ void break_gen(FILE *out, int j) {
     fprintf(out, "b.ne delaybreak%d\n", j);
 }
 
-// halt function
+//end_gen(out);
+//  generate assembly code for halt function;
 void end_gen(FILE *out) {
     fputs("halt:\nand x0, x0, x0\n", out);
 }
 
-// define all labels
+//def_gen(out);
+//  define all initialised labels
 void def_gen(FILE *out) {
     fputs("mem:\n.int 0x3f200000\n", out); // mem addr
     fputs("on:\n.int 0x8\n", out); // turn on
