@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "instruction.h"
+#include "mask_util.h"
 
-static uint32_t mask_n_bits(int32_t value, unsigned int bits);
-
+//result = assemble_branch(ins);
+//  returns 32-bit instruction for branch instruction
 uint32_t assemble_branch(instruction_t instr) {
     switch (instr->branch.type) {
 
@@ -26,11 +28,3 @@ uint32_t assemble_branch(instruction_t instr) {
     return EXIT_FAILURE;
 }
 
-// helper
-
-/* Truncate a signed value to its low 'bits' bits, ready for embedding
- * in an instruction field. The decoder will sign-extend back.
- */
-static uint32_t mask_n_bits(int32_t value, unsigned bits) {
-    return (uint32_t)value & ((1u << bits) - 1);
-}
