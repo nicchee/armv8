@@ -7,10 +7,6 @@
 #include "dpi.h"
 #include "instruction.h"
 
-// OPI instruction
-#define ARITH 2 
-#define WMOVE 5
-
 // Arithmetic and Logical
 #define ARITH_OPR_MASK 9
 #define ARITH_BL_M 0
@@ -49,9 +45,9 @@ static void dpi_reg_mult(instruction_t instruction, mstate_t *state);
  */
 void dpi_imm(instruction_t instruction, mstate_t *state) { 
 
-	if (instruction->dp_imm.opi == ARITH) {	
+	if (instruction->dp_imm.opi == ARITH_OPI) {	
 		dpi_arith(state, instruction->dp_imm.sf, instruction->dp_imm.opc, instruction->dp_imm.rd, instruction->dp_imm.arith.rn, instruction->dp_imm.arith.imm12);
-	} else if (instruction->dp_imm.opi == WMOVE) {
+	} else if (instruction->dp_imm.opi == WMOVE_OPI) {
 		dpi_imm_wide(instruction, state);
 	} else {
 		fprintf(stderr, "Error: invalid opi.\n");
