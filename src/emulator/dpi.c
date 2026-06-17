@@ -10,13 +10,6 @@
 // Arithmetic and Logical
 #define ARITH_OPR_MASK 9
 #define ARITH_BL_M 0
-#define LSL 0
-#define LSR 1
-#define ASR 2
-#define ROR 3
-
-// Multiply
-#define OPR_MULT 8
 
 // DPI Reg OpGroup
 typedef enum {
@@ -157,7 +150,7 @@ static OpGroup get_op_group(int m, uint32_t opr) {
 			return ARITHMETIC;
 		}
 	} else {
-		if (opr == OPR_MULT) { // check that opr is 1000
+		if (opr == MUL_OPR) { // check that opr is 1000
 			return MULTIPLY;
 		}
 	}
@@ -177,16 +170,16 @@ static void dpi_reg_arith_bitlogic(instruction_t instruction, mstate_t *state, O
 	if (sf == 0) { rm_val = (uint32_t)rm_val; }
 	uint64_t op2 = 0;
 	switch (shift) {
-		case LSL:
+		case LSL_SHIFT:
 			op2 = rm_val << operand;
 			break;
-		case LSR:
+		case LSR_SHIFT:
 			op2 = rm_val >> operand;
 			break;
-		case ASR:
+		case ASR_SHIFT:
 			op2 = (sf == 1)? (((int64_t)rm_val) >> operand) : (((int32_t)rm_val) >> operand);
 			break;
-		case ROR:
+		case ROR_SHIFT:
 			if (opgroup != BIT_LOGIC) {
 				fprintf(stderr, "Error: cannot do rotate right for arithmetic instruction.\n");
 				exit(EXIT_FAILURE); // invalid, no ror for arithmetic
