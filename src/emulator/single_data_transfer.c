@@ -146,5 +146,3 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
   }
   return;
 }
-
-
