@@ -114,30 +114,9 @@ instruction_t makeins(uint32_t ins) {
 		fprintf(stderr, "op0 is unknown");
 		exit (EXIT_FAILURE);
 	}
-	
-
-/*
-	switch (op0) {
-		case DPI_OP0:
-			return dpi_imm_makeins(ins, op0);
-		case DPR_OP0:
-			return dpi_reg_makeins(ins, op0);
-		case DPR_MUL_OP0:
-			return dpi_reg_makeins(ins, op0);
-		case BRANCH_OP0:
-			return branch_makeins(ins, op0);
-		case BRANCH_REG_OP0:
-			return branch_makeins(ins, op0);
-		case LOAD_STORE_OP0:
-			return load_store_makeins(ins, op0);
-		default:
-			fprintf(stderr, "op0 is unknown");
-			exit(EXIT_FAILURE);
-	}*/
 }
 
 static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
-	//instruction_t result;
 
 	result->op0 = op0;
 	result->dp_imm.sf = (ins >> SHIFT_SF) & MASK(1);
@@ -163,7 +142,6 @@ static instruction_t dpi_imm_makeins(uint32_t ins, uint32_t op0) {
 }
 
 static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
-	//instruction_t result;
 
 	result->op0 = op0;
 	result->dp_reg.rd = (ins >> SHIFT_RD) & MASK(5);	
@@ -191,7 +169,6 @@ static instruction_t dpi_reg_makeins(uint32_t ins, uint32_t op0) {
 
 
 static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
-	//instruction_t result;
 
 	result->op0 = op0;
 	if ((ins & MASKUNCONDOP) == UNCONDOP) {
@@ -213,7 +190,6 @@ static instruction_t branch_makeins(uint32_t ins, uint32_t op0) {
 }
 
 static instruction_t load_store_makeins(uint32_t ins, uint32_t op0) {
-	//instruction_t result;
 
 	result->op0 = op0;
 	result->load_store.rt = (ins >> SHIFT_RT) & MASK(WIDTH_RT); 
