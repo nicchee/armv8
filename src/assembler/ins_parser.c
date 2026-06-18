@@ -16,7 +16,6 @@ static void shift_all_ops(TokenisedLine *tl);
 static void set_op_to_rzr(TokenisedLine *tl, int set, int check);
 static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instruction_t ins);
 
-
 //parse(rawline, curraddr, ins, symtable);
 //	parse raw line to insert value into parts of the ins struct
 void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {

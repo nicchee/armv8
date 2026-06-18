@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #include "op_funcs.h"
-#include "ins_parser.h"
 #include "symtable.h"
 
 #define NUM_OPFUNCS 21
