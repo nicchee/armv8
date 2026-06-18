@@ -19,7 +19,7 @@ static int operand_starts_with(TokenisedLine tl, int index, char c) {
 	return *(tl.operands[index]) == c;
 }
 
-//if (compare_stirng(s1, s2)) {..}
+//if (compare_string(s1, s2)) {..}
 //	same function as strcmp, but has a better syntax
 static bool compare_string(char *s1, char *s2) {
 	return (strcmp(s1, s2) == 0) ? true : false;  
@@ -330,7 +330,7 @@ static void parseLS(symtable table, TokenisedLine tl, uint32_t *addr, instructio
 
 		} else {
 
-			// Detect register offset buy looking inside [...] - e.g: [xn, xm]
+			// Detect register offset by looking inside [...] - e.g: [xn, xm]
 			char *comma = strchr(tl.operands[1], ',');
 			if (comma != NULL) {
 

@@ -5,7 +5,6 @@
 
 #define HALT_OPERAND "x0"
 
-// Using an enum type op_t so switch case can be used in parser
 typedef enum {
 	ADD, ADDS, 
 	SUB, SUBS, 

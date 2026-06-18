@@ -4,7 +4,6 @@
 
 #include "symtable.h"
 #include "instruction.h"
-#include "bin_writer.h"
 #include "two_pass.h"
 
 int main(int argc, char **argv) {
