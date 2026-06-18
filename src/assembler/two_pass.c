@@ -11,6 +11,8 @@
 #include "asm_branch.h"
 #include "dpi_assembler.h" 
 
+static bool clean_line(char *line, bool *check_block_comment);
+
 //uint32_t result = assemble_bin(ins); 
 //	Helper function for second_pass() 
 //	Binary encoding using functions in asm-branch, asm-sdt, dpi_assembler
@@ -44,7 +46,10 @@ void first_pass(FILE *in, symtable table) {
     line_t line;
     uint32_t currAddr = 0;
 
+	bool check_block_comment = false;
+
     while (fgets(line, sizeof(line), in) != NULL) {
+		if (!clean_line(line, &check_block_comment)) { continue; }
 		if (*line == '\n') { continue; } //empty line
 		line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
 		if (strlen(line) > (MAX_LINE_LEN-1) && !feof(in)) {
@@ -82,7 +87,10 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	exit(EXIT_FAILURE);
     }
 
+	bool check_block_comment = false;
+
     while (fgets(line, sizeof(line), in) != NULL) {
+	if (!clean_line(line, &check_block_comment)) { continue; }
 	if (*line == '\n') { continue; } //empty line
 	line[strcspn(line,"\n")] = '\0'; //remove '\n' from line and null terminate
 	
@@ -105,4 +113,59 @@ void second_pass(FILE *in, symtable table, const char *out_name) {
 	free(ins);
 	ins = NULL;
 	}
+}
+
+/* 
+ * @param: line (the one from fgets)
+ * @function: filter all the unnecessary comments and indertation in an assembly code
+ * @return: true if the line still has content, false if its empty
+ */
+static bool clean_line(char *line, bool *check_block_comment) {
+	
+	// Skip block comments "/* ... */"
+	char *p = line;
+	char *write = line;
+	while (*p != '\0') {
+		if (*check_block_comment) {
+			if (p[0] == '*' && p[1] == '/') {
+				*check_block_comment = false;
+				p += 2;
+			} else {
+				p++;
+			}
+		} else {
+			if (p[0] == '/' && p[1] == '*') {
+				*check_block_comment = true;
+				p += 2;
+			} else {
+				*write++ = *p++;
+			}
+		}
+	}
+	*write = '\0';
+	
+	// Skip normal comment "//"
+	char *comment = strstr(line, "//");
+	if (comment != NULL) {
+		*comment = '\0';
+	}
+
+	// Skip leading whitespaces
+	char *start = line;
+	while (*start == ' ' || *start == '\t') {
+		start++;
+	}
+	if (start != line) {
+		memmove(line, start, strlen(start) + 1);
+	}
+
+	// Skip trailing whitespaces
+	int len = strlen(line);
+	while (len > 0 && (line[len-1] == ' ' || line[len-1] == '\t' || 
+					   line[len-1] == '\n' || line[len-1] == '\r')) {
+		line[len-1] = '\0';
+		len--;
+	}
+
+	return strlen(line) > 0;
 }
