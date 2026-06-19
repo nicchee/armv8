@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv) {
   	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <assembly_file_in> <binary_file_out>", argv[0]);
+		fprintf(stderr, "Usage: %s <assembly_file_in> <binary_file_out>\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
