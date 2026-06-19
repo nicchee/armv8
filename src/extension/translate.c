@@ -20,7 +20,7 @@ int main(void) {
 
 	FILE *out = fopen("morse.s", "w");
 	if (out == NULL) {
-		fprintf(stderr, "Error opening output assembly file");
+		fprintf(stderr, "Error opening output assembly file\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -39,7 +39,7 @@ int main(void) {
 		} else if (isspace(line[i])) {
 			space_gen(out, i);
 		} else {
-			fprintf(stderr, "Invalid input: can only contain alphabetical characters, numbers and spaces. No punctuation");
+			fprintf(stderr, "Invalid input: can only contain alphabetical characters, numbers and spaces. No punctuation\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -64,6 +64,6 @@ static void line_null_terminated(char *s) {
             return;
         }
     }
-    fprintf(stderr, "String is not null terminated!");
+    fprintf(stderr, "String is not null terminated!\n");
     exit(EXIT_FAILURE);
 }
