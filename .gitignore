@@ -46,3 +46,6 @@ morse.s
 #ignore test files
 test_decode.c
 test_init.c
+
+#ignore out files
+out/
