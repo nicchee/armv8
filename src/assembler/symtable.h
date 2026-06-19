@@ -8,7 +8,6 @@
 #define INITIAL_MAX_SYMTABLE_SIZE 256
 
 typedef char sym_t[MAX_SYM_LEN];
-
 typedef struct {
 	sym_t symbol;
 	uint32_t addr;
@@ -22,7 +21,6 @@ struct symtable {
 
 typedef struct symtable *symtable;
 
-// Prototypes for all symtable functions
 extern symtable init_table(void);
 extern void free_table(symtable table);
 extern bool insert_symkv(symtable table, sym_t s, uint32_t address);

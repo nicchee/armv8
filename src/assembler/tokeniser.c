@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include "tokeniser.h"
 
-static TokenisedLine init_tokenised_line( void );
+// Static helper prototype function
+static TokenisedLine init_tokenised_line(void);
 
+//TokenisedLine tl;
+//tl = tokenise(line);
+//	tokenise line (string), return TokenisedLine with label, operator, operands 
+//	and number of operands
 TokenisedLine tokenise(char *line) {
 	TokenisedLine result = init_tokenised_line();
 
@@ -52,7 +57,9 @@ TokenisedLine tokenise(char *line) {
 	return result;
 }
 
-
+//TokenisedLine tl;
+//free_tl(&tl);
+//	free TokenisedLine tl from memory
 void free_tl(TokenisedLine *tl) {
 	if (tl == NULL) return;
 	free(tl->label);
@@ -65,6 +72,9 @@ void free_tl(TokenisedLine *tl) {
 	tl->opcode = NULL;
 }
 
+
+//TokenisedLine tl = init_tokenised_line();
+//	initialise tl with null for every part of the structure.
 static TokenisedLine init_tokenised_line( void ) {
 	TokenisedLine result = { NULL, NULL, { NULL, NULL, NULL, NULL }, 0 };
 	return result;

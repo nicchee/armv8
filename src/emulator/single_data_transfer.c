@@ -1,60 +1,39 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "machine_state.h"
 #include "single_data_transfer.h"
+#include "instruction.h"
 
-// Position of each instruction part for Single Data Transfer & Load Literal
-#define SHIFT_RT 0
-#define SHIFT_XN 5
-#define SHIFT_SIMM19 5
-#define SHIFT_OFFSET 10
-#define SHIFT_L 22
-#define SHIFT_U 24
-#define SHIFT_SF 30
-#define SHIFT_OP 31
-#define SHIFT_XM 6
-
-// Width of each instcution part for Single Data Transfer & Load Literal
-#define WIDTH_RT 5
-#define WIDTH_XN 5
-#define WIDTH_SIMM19 19
-#define WIDTH_OFFSET 12
-#define WIDTH_L 1
-#define WIDTH_U 1
-#define WIDTH_SF 1
-#define WIDTH_OP 1
-#define WIDTH_XM 5
-
-// Masking for simm9 and simm19
-#define MASK_SIMM9 0x1FF
-#define MASK_BIT_9 0x100
-#define MASK_SIMM19 0x7FFFF
-#define MASK_BIT_19 0x40000
-
-// Private helper functions
-static int64_t sgx_simm19(int32_t value);
-static int64_t sgx_simm9(int32_t value);
+// Static helper prototype functions
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt);
 
-/*
-  * @function: implement the single data transfer and load literal
-*/
-void single_data_transfer(uint32_t instruction, mstate_t *state) {
-  // Extraction of bits for Single Data Transfer & Load Literal
-  uint32_t rt = (instruction >> SHIFT_RT) & MASK(WIDTH_RT); 
-  uint32_t xn = (instruction >> SHIFT_XN) & MASK(WIDTH_XN);
-  int32_t simm19 = (instruction >> SHIFT_SIMM19) & MASK(WIDTH_SIMM19);
-  uint32_t offset = (instruction >> SHIFT_OFFSET) & MASK(WIDTH_OFFSET);
-  uint32_t l = (instruction >> SHIFT_L) & MASK(WIDTH_L);
-  uint32_t u = (instruction >> SHIFT_U) & MASK(WIDTH_U);
-  uint32_t sf = (instruction >> SHIFT_SF) & MASK(WIDTH_SF);
-  uint32_t op = (instruction >> SHIFT_OP) & MASK(WIDTH_OP);
+//instruction_t ins;
+//mstate_t *statep;
+//single_data_transfer(ins, statep);
+//  implement the single data transfer and load literal
+void single_data_transfer(instruction_t instruction, mstate_t *state) {
 
-  if (op == 1) {
-    // Compute the base address
-    if (u == 1) {
-      // Unsigned Immediate Offset
-      uint32_t imm12 = offset;
+  uint32_t rt = instruction->load_store.rt;
+  uint32_t sf = instruction->load_store.sf;
+  
+  switch (instruction->load_store.mode) {
+
+    case LIT_LOAD: {
+      int32_t simm19 = instruction->load_store.simm19;
+      uint64_t addr = state->pc + (sgx(simm19, 19) * 4);
+      if (sf == 1) {
+        state->regs[rt] = read_memory(state, addr, 8);
+      } else {
+        state->regs[rt] = read_memory(state, addr, 4);
+      }
+      break;
+    }
+    
+    case UNSIGNED_OFFSET: {
+      uint32_t xn = instruction->load_store.sdt.xn;
+      uint32_t l = instruction->load_store.sdt.L;
+      uint32_t imm12 = instruction->load_store.sdt.unsigned_offset.imm12;
       if (sf == 1) {
         uint64_t uoffset = (uint64_t) imm12 * 8;
         uint64_t addr = state->regs[xn] + uoffset;
@@ -72,13 +51,34 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
           write_memory(state, addr, 4, rt);
         }
       }
-    } else {
-      // Determine which operation from bit 0 of offset
-      uint32_t det_bit = offset & 1;
-      uint32_t xm = (offset >> SHIFT_XM) & MASK(WIDTH_XM);
-      if (det_bit == 0) {
-        // Register Offset
-        uint64_t addr = state->regs[xn] + state->regs[xm];
+      break;
+    }
+
+    case PRE_POST_INDEX: {
+      uint32_t xn = instruction->load_store.sdt.xn;
+      uint32_t l = instruction->load_store.sdt.L;
+      uint32_t i = instruction->load_store.sdt.pre_post_index.I;
+      int32_t simm9 = instruction->load_store.sdt.pre_post_index.simm9;
+      if (i == 0) {
+        // Post-Indexed
+        uint64_t addr = state->regs[xn];
+        if (sf == 1) {
+          if (l == 1) {
+              state->regs[rt] = read_memory(state, addr, 8);
+            } else {
+              write_memory(state, addr, 8, rt);
+            }
+        } else {
+          if (l == 1) {
+            state->regs[rt] = read_memory(state, addr, 4);
+          } else {
+            write_memory(state, addr, 4, rt);
+          }
+        }
+        state->regs[xn] += simm9;
+      } else {
+        // Pre-Indexed
+        uint64_t addr = state->regs[xn] + simm9;
         if (sf == 1) {
           if (l == 1) {
             state->regs[rt] = read_memory(state, addr, 8);
@@ -92,80 +92,47 @@ void single_data_transfer(uint32_t instruction, mstate_t *state) {
             write_memory(state, addr, 4, rt);
           }
         }
-      } else {
-        int64_t simm9 = sgx_simm9((offset >> 2) & MASK(9));
-        uint32_t i = (offset >> 1) & 1;
-        if (i == 0) {
-          // Post-Indexed
-          uint64_t addr = state->regs[xn];
-          if (sf == 1) {
-            if (l == 1) {
-                state->regs[rt] = read_memory(state, addr, 8);
-              } else {
-                write_memory(state, addr, 8, rt);
-              }
-          } else {
-            if (l == 1) {
-              state->regs[rt] = read_memory(state, addr, 4);
-            } else {
-              write_memory(state, addr, 4, rt);
-            }
-          }
-          state->regs[xn] += simm9;
+        state->regs[xn] += simm9;
+      }
+      break;
+    }
+
+    case REG_OFFSET: {
+      uint32_t xn = instruction->load_store.sdt.xn;
+      uint32_t l = instruction->load_store.sdt.L;
+      uint32_t xm = instruction->load_store.sdt.xm;
+      uint64_t addr = state->regs[xn] + state->regs[xm];
+      if (sf == 1) {
+        if (l == 1) {
+          state->regs[rt] = read_memory(state, addr, 8);
         } else {
-          // Pre-Indexed
-          uint64_t addr = state->regs[xn] + simm9;
-          if (sf == 1) {
-            if (l == 1) {
-              state->regs[rt] = read_memory(state, addr, 8);
-            } else {
-              write_memory(state, addr, 8, rt);
-            }
-          } else {
-            if (l == 1) {
-              state->regs[rt] = read_memory(state, addr, 4);
-            } else {
-              write_memory(state, addr, 4, rt);
-            }
-          }
-          state->regs[xn] += simm9;
+          write_memory(state, addr, 8, rt);
+        }
+      } else {
+        if (l == 1) {
+          state->regs[rt] = read_memory(state, addr, 4);
+        } else {
+          write_memory(state, addr, 4, rt);
         }
       }
+      break;
     }
-  } else {
-      // Literal (op == 0) (L == 1)
-      uint64_t addr = state->pc + (sgx_simm19(simm19) * 4);
-      if (sf == 1) {
-        state->regs[rt] = read_memory(state, addr, 8);
-      } else {
-        state->regs[rt] = read_memory(state, addr, 4);
-      }
   }
+
   pc_inc(state);
   return;
 }
 
-// Helper functions
-static int64_t sgx_simm19(int32_t value) {
-  int64_t result = value & MASK_SIMM19;
-  if (result & MASK_BIT_19) {
-    result |= ~MASK_SIMM19;
-  }
-  return result;
-}
+// Helper 
 
-static int64_t sgx_simm9(int32_t value) {
-  int64_t result = value & MASK_SIMM9;
-  if (result & MASK_BIT_9) {
-    result |= ~MASK_SIMM9;
-  }
-  return result;
-}
-
+//mstate_t statep;
+//write_memory(statep, addr, num_bytes, rt);
+//  check if addr is valid with num_bytes. 
+//  if addr is valid, write to state's memory with value in register rt
 static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t rt) {
   check_addr(addr, num_bytes);
   if (addr >= 0x3f200000 && addr <= 0x3f2000c0) { // GPIO
-    // Debugging for part 3
+    // part 3
     printf("GPIO Write to address 0x%08lx\n", addr);
     return; 
   }
@@ -175,3 +142,5 @@ static void write_memory(mstate_t *state, uint64_t addr, int num_bytes, uint64_t
   }
   return;
 }
+
+

@@ -4,64 +4,20 @@
 #include "dpi_assembler.h"
 #include "instruction.h"
 
-#define MASK1110 14
-#define MASK0111 7
-#define DPI_IMM 8
-#define DPI_REG 5
-#define SHIFT_OP0 25
-
-// Data Processing Instruction Immediate + Register
-// Position of each instruction part
-#define SHIFT_RD 0
-#define SHIFT_RN 5
-#define SHIFT_OPC 29
-#define SHIFT_SF 31
-
-// Data Processing Instruction (Immediate)
-// Position of each instruction part
-#define SHIFT_IMM12 10
-#define SHIFT_SH 22
-#define SHIFT_IMM16 5
-#define SHIFT_HW 21
-#define SHIFT_OPI 23
-
-// OPI instruction
-#define ARITH 2 
-#define WMOVE 5
-
-// Data Processing Instruction (Register)
-// Position of each instruction part
-#define SHIFT_OPERAND 10
-#define SHIFT_RM 16
-#define SHIFT_OPR 21
-#define SHIFT_M 28
-
-// Arithmetic and Logical
-#define ARITH_OPR_MASK 9
-#define ARITH_BL_M 0
-#define SHIFT_NEGATED 21
-#define SHIFT_SHIFT 22
-#define LSL 0
-#define LSR 1
-#define ASR 2
-#define ROR 3
-
-// Multiply
-#define OPR_MULT 8
-#define SHIFT_RA 10
-#define SHIFT_X 15
-
+//instruction_t ins;
+//return dpi_imm_assembler(ins)
+//  generates the 32-bit machine code for Data Processing (Immediate) instructions
 uint32_t dpi_imm_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_imm.sf << SHIFT_SF;
     machine_code |= insp->dp_imm.opc << SHIFT_OPC;
     machine_code |= (insp->op0 & MASK1110) << SHIFT_OP0;
     machine_code |= insp->dp_imm.opi << SHIFT_OPI;
-    if (insp->dp_imm.opi == ARITH) {
+    if (insp->dp_imm.opi == ARITH_OPI) {
         machine_code |= insp->dp_imm.arith.sh << SHIFT_SH;
         machine_code |= insp->dp_imm.arith.imm12 << SHIFT_IMM12;
         machine_code |= insp->dp_imm.arith.rn << SHIFT_RN;
-    } else if (insp->dp_imm.opi == WMOVE) {
+    } else if (insp->dp_imm.opi == WIDE_OPI) {
         machine_code |= insp->dp_imm.wide.hw << SHIFT_HW;
         machine_code |= insp->dp_imm.wide.imm16 << SHIFT_IMM16;
     } else {
@@ -71,6 +27,9 @@ uint32_t dpi_imm_assembler(instruction_t insp) {
     return machine_code;
 }
 
+//instruction_t ins;
+//return dpi_imm_assembler(ins)
+//  generates the 32-bit machine code for Data Processing (Register) instructions
 uint32_t dpi_reg_assembler(instruction_t insp) {
     uint32_t machine_code = 0;
     machine_code |= insp->dp_reg.sf << SHIFT_SF;

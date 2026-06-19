@@ -67,6 +67,82 @@ typedef enum {UNCOND, REG, COND} branch_type_t;
 #define B_LE 0Xd // 1101
 #define B_AL 0Xe // 1110
 
+// Data Processing Instruction Immediate + Register
+// Position of each instruction part
+#define SHIFT_RD 0
+#define SHIFT_RN 5
+#define SHIFT_OPC 29
+#define SHIFT_SF 31
+
+// Data Processing Instruction (Immediate)
+// Position of each instruction part
+#define SHIFT_IMM12 10
+#define SHIFT_SH 22
+#define SHIFT_IMM16 5
+#define SHIFT_HW 21
+#define SHIFT_OPI 23
+
+// Data Processing Instruction (Register)
+// Position of each instruction part
+#define SHIFT_OPERAND 10
+#define SHIFT_RM 16
+#define SHIFT_OPR 21
+#define SHIFT_M 28
+#define SHIFT_NEGATED 21
+#define SHIFT_SHIFT 22
+#define SHIFT_RA 10
+#define SHIFT_X 15
+
+// Branch Instruction
+// Position of each instruction part
+#define SHIFT_SIMM26 0
+#define SHIFT_XN 5
+#define SHIFT_COND 0
+#define SHIFT_SIMM19 5
+
+// Type of Branches
+// Mask
+#define MASKUNCONDOP 0xfc000000
+#define MASKREGOP    0xffff0000
+#define MASKCONDOP   0xfc000000
+// Bit code
+#define UNCONDOP  0x14000000
+#define REGOP     0xd61f0000
+#define CONDOP    0x54000000
+
+// Single Data Transfer
+// Position of each instruction part
+#define SHIFT_RT 0
+#define SHIFT_XN 5
+#define SHIFT_SIMM19 5
+#define SHIFT_OFFSET 10
+#define SHIFT_L 22
+#define SHIFT_U 24
+#define SHIFT_SDT_SF 30
+#define SHIFT_OP 31
+#define SHIFT_XM 16
+
+// Single Data Transfer
+// Width of each instruction part
+#define WIDTH_RT 5
+#define WIDTH_XN 5
+#define WIDTH_SIMM19 19
+#define WIDTH_OFFSET 12
+#define WIDTH_L 1
+#define WIDTH_U 1
+#define WIDTH_SF 1
+#define WIDTH_OP 1
+#define WIDTH_XM 5
+
+#define SHIFT_OP0 25
+#define MASK1110 14
+#define MASK0111 7
+#define MASK0101 5
+
+#define DPI_IMM 8
+#define DPI_REG 5
+#define LOADSTORE 4
+#define BRANCH 10
 
 // Struct for instruction_t
 struct instruction_t {
@@ -95,7 +171,8 @@ struct instruction_t {
 					uint32_t sh, imm12;
 				} arith;
 				struct {
-					uint32_t hw, imm16;
+					uint32_t hw; 
+					uint64_t imm16;
 				} wide;
 			};
 		} dp_imm;
@@ -159,5 +236,9 @@ struct instruction_t {
 };
 
 typedef struct instruction_t *instruction_t;
+
+extern instruction_t makeins(uint32_t ins);
+extern void init_ins(void);
+extern void free_ins(void);
 
 #endif

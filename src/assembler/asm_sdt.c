@@ -1,14 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "instruction.h"
 #include "asm_sdt.h"
+#include "mask_util.h"
 
-static uint32_t mask_n_bits(int32_t value, unsigned n);
-
-/** @function: Assemble data for Single Data Transfer / Load Literal into its binary representation
- *  @param: instruction 
- */
+//result = assemble_load_store(instr)  
+//  assemble data for Single Data Transfer / Load Literal into its binary representation 
 uint32_t assemble_load_store(instruction_t instr) {
     switch (instr->load_store.mode) {
         case LIT_LOAD: {
@@ -53,13 +52,4 @@ uint32_t assemble_load_store(instruction_t instr) {
     }
     fprintf(stderr, "ERROR(assemble_load_store): Load or store doesn't work");
     return EXIT_FAILURE;
-}
-
-// helper
-
-/* Truncate a signed value to its low 'bits' bits, ready for embedding
- * in an instruction field. The decoder will sign-extend back.
- */
-static uint32_t mask_n_bits(int32_t value, unsigned n) {
-    return (uint32_t)value & ((1u << n) - 1);
 }

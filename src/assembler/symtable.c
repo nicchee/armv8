@@ -1,18 +1,16 @@
-#include "symtable.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-bool null_terminated(char *s, int max) {
-	for (int i = 0; i < max; i++) {
-		if (s[i] == '\0') { return true; }
-	}
-	return false;
-}
+#include "symtable.h"
 
-//Create symbol table, return pointer
+// Static helper prototype function
+static bool null_terminated(char *s, int max);
+
+//symtable table;
+//table = init_table();
+//	Create symbol table, return pointer
 symtable init_table(void) {
 	symtable table = malloc(sizeof(struct symtable));
 	if (table == NULL) { 
@@ -29,7 +27,9 @@ symtable init_table(void) {
 	return table;
 }
 
-//Free memory
+//symtable table;
+//free_table(table);
+//	Free table memory
 void free_table(symtable table) {
 	if (table != NULL) {
 		if (table->entries != NULL) {
@@ -87,5 +87,15 @@ uint32_t get_addr(symtable table, sym_t s) {
 	}
 	fprintf(stderr, "Couldn't find symbol in table\n");
 	exit(1);
+}
 
+// Helper
+
+//if (null_terminated(s, max)) {..}
+//	check if string s is null terminated
+static bool null_terminated(char *s, int max) {
+	for (int i = 0; i < max; i++) {
+		if (s[i] == '\0') { return true; }
+	}
+	return false;
 }

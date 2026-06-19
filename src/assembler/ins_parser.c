@@ -1,14 +1,52 @@
-#include "symtable.h"
-#include "instruction.h"
-#include "ins_parser.h" //includes tokeniser.h
-#include "tokeniser.h"
-#include "op_funcs.h"
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "symtable.h"
+#include "instruction.h"
+#include "ins_parser.h"
+#include "tokeniser.h"
+#include "op_funcs.h"
+
+// Static helper prototype functions
+static op_t get_op_t (TokenisedLine tl); 
+static void shift_all_ops(TokenisedLine *tl);
+static void set_op_to_rzr(TokenisedLine *tl, int set, int check);
+static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instruction_t ins);
+
+//parse(rawline, curraddr, ins, symtable);
+//	parse raw line to insert value into parts of the ins struct
+void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
+	ins->op0 = EMPTY_SKIP_OP0; // set op0 to skip first so if it's a label and parse returns without populating instruction_t, second_pass() will know to skip the line
+	// line is null terminated in two pass before passing to parse 
+	TokenisedLine tl = tokenise(line);
+	
+	// if opcode is missing, there's nothing to parse
+	if (tl.opcode == NULL) {
+		return;
+	}
+	
+	op_t op = get_op_t(tl);
+
+	if (op == HALT) {
+		ins->int_dir.is_label = false;
+		ins->halt.halt_val = HALT_INS;
+		ins->op0 = HALT_OP0;
+	}
+	else if (op == ALIAS) {
+		parse_alias(table, &tl, addr, ins);
+	}	
+	// INTDIR or Non-alias functions: use function pointer array from op_funcs.c
+	else {
+		if (op_func_arr[op] != NULL) {
+			(*op_func_arr[op]) (table, tl, addr, ins);
+		} else fprintf(stderr, "Function pointer in op_func_arr was null");
+	}
+	
+	free_tl(&tl);
+}
 
 //op_t op = get_op_t (tl);
 //	returns op from tokenisedline
@@ -78,22 +116,31 @@ static op_t get_op_t (TokenisedLine tl){
 
 //Alias parsing helper functions
 
-//Shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
-void shift_all_ops(TokenisedLine *tl) {
+//TokenisedLine tl;
+//shift_all_ops(tl);
+//	shifts all ops to the right by 1 to make space at tl.operands[0] - for cmp, cmn, tst
+static void shift_all_ops(TokenisedLine *tl) {
 	for (int i = tl->num_operands; i > 0; i--) {
 		if (i < MAX_OPERANDS) {
 			tl->operands[i] = tl->operands[i-1];
 		}
 	}
 } 
-//Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
-void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
+
+//TokenisedLine tl;
+//set_op_to_rzr(tl, set, check)
+//	Set <op[set]> to rzr, use <op[check]> to see if xzr or wzr, increment tl.num_operands
+static void set_op_to_rzr(TokenisedLine *tl, int set, int check) {
 	tl->operands[set] = (tl->operands[check][0]) == 'x' ? 
 		strdup("xzr") : strdup("wzr");
 	tl->num_operands++;
 } 
 
-// Parse all aliases
+//symtable table;
+//TokenisedLine tl;
+//instruction_t ins;
+//parse_alias(table, &tl, addr, ins)
+//	Parse all aliases
 static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instruction_t ins) {
 	//cmp rn, <op2> -> subs rzr, rn, <op2>
 	if (strcmp(tl->opcode, "cmp") == 0) {
@@ -148,39 +195,6 @@ static void parse_alias(symtable table, TokenisedLine *tl, uint32_t *addr, instr
 		(*op_func_arr[MSUB]) (table, *tl, addr, ins);
 	}
 } 
-
-//parse(rawline, curraddr, ins, symtable)
-//	parse raw line to insert value into parts of the ins struct
-void parse(char *line, uint32_t *addr, instruction_t ins, symtable table) {
-	ins->op0 = EMPTY_SKIP_OP0; // set op0 to skip first so if it's a label and parse returns without populating instruction_t, second_pass() will know to skip the line
-	// line is null terminated in two pass before passing to parse 
-	TokenisedLine tl = tokenise(line);
-	
-	// if opcode is missing, there's nothing to parse
-	if (tl.opcode == NULL) {
-		return;
-	}
-	
-	op_t op = get_op_t(tl);
-
-	if (op == HALT) {
-		ins->int_dir.is_label = false;
-		ins->halt.halt_val = HALT_INS;
-		ins->op0 = HALT_OP0;
-	}
-	else if (op == ALIAS) {
-		parse_alias(table, &tl, addr, ins);
-	}	
-	// INTDIR or Non-alias functions: use function pointer array from op_funcs.c
-	else {
-		if (op_func_arr[op] != NULL) {
-			(*op_func_arr[op]) (table, tl, addr, ins);
-		} else fprintf(stderr, "Function pointer in op_func_arr was null");
-	}
-	
-	free_tl(&tl);
-
-}
 
 
 
