@@ -37,7 +37,7 @@ const char *morse_alpha[] = {
 const char *morse_digit[] = {
     //digit 0 to 9 
     "-----", // 0
-    ".---", 
+    ".----", 
     "..---",
     "...--",
     "....-",
